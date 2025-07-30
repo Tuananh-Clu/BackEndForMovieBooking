@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # ✅ Copy file .csproj từ thư mục con
-COPY MovieTicketWebApi/MovieTicketWebApi/MovieTicketWebApi.csproj ./MovieTicketWebApi/
+COPY MovieTicketWebApi/MovieTicketWebApi.csproj ./
 
 # ✅ Restore trong đúng thư mục
 WORKDIR /src/MovieTicketWebApi
