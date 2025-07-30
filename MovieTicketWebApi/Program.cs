@@ -42,7 +42,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("https://movie-booking-zeta-beryl.vercel.app/") 
+            policy.WithOrigins("https://ap-cinema.vercel.app/") 
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
