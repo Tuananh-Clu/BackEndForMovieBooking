@@ -1,30 +1,21 @@
 # Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 
-# ✅ Copy file .csproj từ thư mục con
-COPY MovieTicketWebApi/MovieTicketWebApi.csproj ./
+# Copy solution and project files
+COPY MovieTicketWebApi/MovieTicketWebApi.csproj ./MovieTicketWebApi/
+COPY MovieTicketWebApi.sln ./
 
-# ✅ Restore trong đúng thư mục
-WORKDIR /src/MovieTicketWebApi
-RUN dotnet restore
+# Restore
+RUN dotnet restore MovieTicketWebApi.sln
 
-# ✅ Copy toàn bộ source code
-WORKDIR /src
+# Copy the rest and build
 COPY . .
-
-# ✅ Build xuất bản vào thư mục out
 WORKDIR /src/MovieTicketWebApi
 RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
-
-# Railway yêu cầu expose port 8080
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
-
-# ✅ Chạy đúng tên .dll (trùng với .csproj)
 ENTRYPOINT ["dotnet", "MovieTicketWebApi.dll"]
