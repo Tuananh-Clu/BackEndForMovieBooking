@@ -1,54 +1,41 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddSwaggerGen();
+// Register services
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddSingleton<ArticleService>();
 builder.Services.AddSingleton<MovieUpcomingTmdbApi>();
 builder.Services.AddSingleton<StorageMovieTmdb>();
 builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddSingleton<MongoDbContext>();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
 });
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
-    {
-        options.Authority = builder.Configuration["Jwt:Issuer"];
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateAudience = false,
-        };
-    });
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("https://ap-cinema.vercel.app")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("https://ap-cinema.vercel.app")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
 });
+
+builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
@@ -56,19 +43,38 @@ builder.Services.AddSingleton<IMongoClient>(sp =>
     return new MongoClient(settings.ConnectionString);
 });
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.Authority = builder.Configuration["Jwt:Issuer"];
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateAudience = false,
+        };
+    });
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Middleware order matters
 if (app.Environment.IsDevelopment())
 {
-    app.MapSwagger();
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapSwagger();
-app.UseSwaggerUI();
-app.UseCors("AllowFrontend");
-app.UseAuthentication();
-app.UseAuthorization();
+else
+{
+    app.UseSwagger(); // nếu muốn Swagger chạy ở cả production
+    app.UseSwaggerUI();
+}
+
+app.UseRouting();              // ✅ BẮT BUỘC
+app.UseCors("AllowFrontend"); // ✅ Trước Auth
+app.UseAuthentication();      // ✅
+app.UseAuthorization();       // ✅
 
 app.MapControllers();
 
