@@ -58,13 +58,15 @@ namespace MovieTicketWebApi.Controllers.User
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
             
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-
+            if (user == null)
+            {
+                user = await collection.Find(filter).FirstOrDefaultAsync();
+            }
 
             foreach (var group in ticketInformation)
             {
                 var update = Builders<Client>.Update.Push("tickets", group);
                 var result = await mongoCollection.UpdateOneAsync(filter, update);
-                Console.WriteLine($"Matched: {result.MatchedCount}, Modified: {result.ModifiedCount}");
             }
 
             return Ok(new { success = true });
