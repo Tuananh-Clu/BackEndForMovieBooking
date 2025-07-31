@@ -21,6 +21,9 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
+# ✅ Thêm dòng này để fix lỗi SSL MongoDB Atlas
+RUN apt-get update && apt-get install -y libssl-dev
+
 # Copy app đã build từ stage trước
 COPY --from=build /app/publish .
 
