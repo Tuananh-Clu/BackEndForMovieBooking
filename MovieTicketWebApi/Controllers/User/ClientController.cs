@@ -68,22 +68,29 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(new { success = true });
         }
+        [Authorize]
         [HttpGet("GetUser")]
-        public async Task<IActionResult> GetAll([FromHeader(Name ="Authorization")] string token)
+        public async Task<IActionResult> GetAll([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(jwt);
-            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-            var data = await mongoCollection.Find(x=>x.Id==userId).FirstOrDefaultAsync();
+            var userId = new JwtSecurityTokenHandler()
+                            .ReadJwtToken(jwt)
+                            .Claims
+                            .FirstOrDefault(c => c.Type == "sub")?.Value;
+
+            var data = await mongoCollection.Find(x => x.Id == userId).FirstOrDefaultAsync()
+                    ?? await collection.Find(x => x.Id == userId).FirstOrDefaultAsync();
+
+            if (data == null) return NotFound("Không tìm thấy người dùng");
 
             return Ok(new
-                {
+            {
                 data.Name,
                 data.Email,
-                data.tickets
+                tickets = data.tickets
             });
         }
+
     }
 
 }
