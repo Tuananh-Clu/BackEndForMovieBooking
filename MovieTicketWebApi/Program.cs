@@ -24,6 +24,7 @@ builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
