@@ -5,6 +5,6 @@ namespace MovieTicketWebApi.Model.Article
     public class ListArticle
     {
         [JsonPropertyName("items")]
-        public List<MainArticle> Items { get; set; }
+        public List<MainArticle> items { get; set; }
     }
 }

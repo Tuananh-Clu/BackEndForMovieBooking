@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Article;
 using System.Text.Json;
 
@@ -11,11 +13,10 @@ namespace MovieTicketWebApi.Service.Article
     {
         public readonly HttpClient httpClient;
         public readonly IMongoCollection<MainArticle> mongoCollection;
-        public ArticleService(HttpClient http, IMongoClient client)
+        public ArticleService(HttpClient http,MongoDbContext dbContext)
         {
             httpClient = http;
-            var database = client.GetDatabase("ArticleDb");
-            mongoCollection = database.GetCollection<MainArticle>("Article");
+            mongoCollection = dbContext.Article;
         }
         public async Task<List<MainArticle>> GetFromUrl()
              
@@ -42,9 +43,9 @@ namespace MovieTicketWebApi.Service.Article
 
                     var result = JsonSerializer.Deserialize<ListArticle>(jsonString);
 
-                    if (result?.Items != null)
+                    if (result?.items != null)
                     {
-                        AllArticle.AddRange(result.Items);
+                        AllArticle.AddRange(result.items);
                     }
                 }
             }

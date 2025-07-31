@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Model.User;
 using Newtonsoft.Json.Linq;
@@ -16,19 +17,26 @@ namespace MovieTicketWebApi.Controllers.User
     public class ClientController : ControllerBase
     {
         public readonly IMongoCollection<Client> mongoCollection;
-        public ClientController(IMongoClient client)
+        public readonly IMongoCollection<Client> collection;
+        public ClientController(MongoDbContext dbContext)
         {
-            var database = client.GetDatabase("User");
-            mongoCollection = database.GetCollection<Client>("Client");
+
+            mongoCollection = dbContext.User;
+            collection = dbContext.Admin;
+
+
         }
         [Authorize]
         [HttpPost("AddUser")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
-           var user= await mongoCollection.Find(i=>i.Id==client.Id).FirstOrDefaultAsync();
-            if (user == null)
+            var user = await mongoCollection.Find(i => i.Id == client.Id).FirstOrDefaultAsync();
+            if (user == null&&client.role=="User")
             {
                 await mongoCollection.InsertOneAsync(client);
+            }
+            else if(user==null&&client.role=="Admin") {
+                await collection.InsertOneAsync(client);
             }
 
             return Ok(new {sucess=true});

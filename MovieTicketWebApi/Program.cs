@@ -1,5 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
+using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
@@ -23,6 +24,7 @@ builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
@@ -42,7 +44,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("https://ap-cinema.vercel.app") 
+            policy.WithOrigins("https://ap-cinema.vercel.app")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 
 namespace MovieTicketWebApi.Service
@@ -6,10 +7,9 @@ namespace MovieTicketWebApi.Service
     public class CinemaService
     {
         public readonly IMongoCollection<Cinema> mongoCollection;
-        public CinemaService(IMongoClient client)
+        public CinemaService(MongoDbContext dbContext)
         {
-            var database = client.GetDatabase("CinemaDb");
-            mongoCollection = database.GetCollection<Cinema>("Cinemas");
+            mongoCollection = dbContext.Cinema;
         }
         public async Task<List<Cinema>> GetCinemasAsync()
         {

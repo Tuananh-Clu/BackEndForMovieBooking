@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
+using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using System.Text.Json;
 
@@ -9,11 +10,10 @@ namespace MovieTicketWebApi.Service
     {
         public readonly HttpClient http;
         public readonly IMongoCollection<MoviesInfomation> mongoCollection;
-        public MovieUpcomingTmdbApi(IMongoClient client,HttpClient https)
+        public MovieUpcomingTmdbApi(MongoDbContext dbContext,HttpClient https)
         {
             http = https;
-            var database = client.GetDatabase("UpcomingMovie");
-            mongoCollection = database.GetCollection<MoviesInfomation>("Movie");
+            mongoCollection = dbContext.Upcoming;
         }
         public async Task<List<MoviesInfomation>> GetFromTmdb()
         {
