@@ -56,6 +56,7 @@ namespace MovieTicketWebApi.Controllers.User
                 return BadRequest("Không tìm thấy userId trong token");
 
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
+            
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
 
 
@@ -87,7 +88,7 @@ namespace MovieTicketWebApi.Controllers.User
             {
                 data.Name,
                 data.Email,
-                tickets = data.tickets
+                data.tickets
             });
         }
 
