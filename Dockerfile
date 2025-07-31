@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy solution and project file
+# Copy solution và file project
 COPY MovieTicketWebApi.sln ./
 COPY MovieTicketWebApi/MovieTicketWebApi.csproj ./MovieTicketWebApi/
 
@@ -12,7 +12,7 @@ RUN dotnet restore MovieTicketWebApi.sln
 # Copy toàn bộ source vào image
 COPY . .
 
-# Build và publish ra thư mục riêng
+# Build và publish ứng dụng
 WORKDIR /src/MovieTicketWebApi
 RUN dotnet publish -c Release -o /app/publish
 
@@ -21,17 +21,22 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
-# ✅ Thêm dòng này để fix lỗi SSL MongoDB Atlas
-RUN apt-get update && apt-get install -y libssl-dev
+# ✅ Cài thêm libssl-dev & ca-certificates để fix lỗi kết nối MongoDB Atlas qua SSL
+RUN apt-get update && \
+    apt-get install -y libssl-dev ca-certificates && \
+    update-ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy app đã build từ stage trước
 COPY --from=build /app/publish .
 
-# Biến môi trường để app ASP.NET lắng nghe đúng cổng
+# ✅ Lắng nghe cổng 5000 (Render hoặc local)
 ENV ASPNETCORE_URLS=http://+:5000
-
-# Mở cổng cho bên ngoài truy cập vào app
 EXPOSE 5000
 
-# Lệnh khởi động ứng dụng
+# ✅ Bắt buộc: cấu hình cho TLS mới (nếu môi trường thiếu OpenSSL hiện đại)
+ENV DOTNET_SYSTEM_NET_SECURITY_ALLOWLEGACYTLS=false
+
+# Chạy app
 ENTRYPOINT ["dotnet", "MovieTicketWebApi.dll"]

@@ -18,6 +18,7 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 builder.Services.AddSingleton<MongoDbContext>();
+AppContext.SetSwitch("System.Net.Security.SslStream.UseLegacyTls", false);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
