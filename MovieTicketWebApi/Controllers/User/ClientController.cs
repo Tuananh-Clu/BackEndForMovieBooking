@@ -61,13 +61,23 @@ namespace MovieTicketWebApi.Controllers.User
             if (user == null)
             {
                 user = await collection.Find(filter).FirstOrDefaultAsync();
+                foreach (var group in ticketInformation)
+                {
+                    var update = Builders<Client>.Update.Push("tickets", group);
+                    var result = await collection.UpdateOneAsync(filter, update);
+                }
+
+            }
+            else
+            {
+                foreach (var group in ticketInformation)
+                {
+                    var update = Builders<Client>.Update.Push("tickets", group);
+                    var result = await mongoCollection.UpdateOneAsync(filter, update);
+                }
             }
 
-            foreach (var group in ticketInformation)
-            {
-                var update = Builders<Client>.Update.Push("tickets", group);
-                var result = await mongoCollection.UpdateOneAsync(filter, update);
-            }
+           
 
             return Ok(new { success = true });
         }
