@@ -64,6 +64,8 @@ if (app.Environment.IsDevelopment())
     app.MapSwagger();
     app.UseSwaggerUI();
 }
+app.MapSwagger();
+app.UseSwaggerUI();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
