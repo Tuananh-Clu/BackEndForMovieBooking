@@ -22,8 +22,20 @@ namespace MovieTicketWebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-           var cinemas=await cinemaService.GetCinemasAsync();
-            return Ok(cinemas); 
+          
+                try
+                {
+                    var result = await cinemaService.GetCinemasAsync();
+                    return Ok(result);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                    return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+                }
+            
+
         }
 
         [HttpPost("Read_Json")]
