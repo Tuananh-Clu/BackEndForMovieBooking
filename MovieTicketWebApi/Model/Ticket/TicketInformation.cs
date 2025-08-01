@@ -6,7 +6,9 @@ namespace MovieTicketWebApi.Model.Ticket
     public class TicketInformation
     {
         public string Id { get; set; } = "";
-        public string roomId { get; set; } = "";
+        [BsonElement("roomId")]
+        [JsonPropertyName("roomId")]
+        public string RoomId { get; set; } = "";
         public string Time { get; set; } = "";
         public string MovieTitle { get; set; } = "";
         public string Date { get; set; } = "";
