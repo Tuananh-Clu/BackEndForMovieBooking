@@ -20,5 +20,6 @@ namespace MovieTicketWebApi.Service
             await mongoCollection.DeleteManyAsync(Builders<Cinema>.Filter.Empty);
             await mongoCollection.InsertManyAsync(cinemas);
         }
+
     }
 }

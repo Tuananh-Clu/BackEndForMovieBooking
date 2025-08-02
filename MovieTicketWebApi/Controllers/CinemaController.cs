@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MovieTicketWebApi.Model.Cinema;
+using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Service;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -52,6 +54,6 @@ namespace MovieTicketWebApi.Controllers
         {
             var data = cinemas.Where(x => x.city.Contains(movie)).ToList();
             return Ok(data);
-        }
+        }       
     }
 }
