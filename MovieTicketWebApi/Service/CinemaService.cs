@@ -28,8 +28,8 @@ namespace MovieTicketWebApi.Service
             foreach (var ticket in tickets)
             {
                 var cinema = await mongoCollection.Find((c) => c.address == ticket.Location).FirstOrDefaultAsync();
-                if (cinema != null) continue;
-                var room = cinema.rooms.FirstOrDefault(c => c.id == ticket.Id);
+                if (cinema == null) continue;
+                var room = cinema.rooms.FirstOrDefault(c => c.id == ticket.RoomId);
                 if (room == null) continue;
                 var showtime = room.showtimes.FirstOrDefault(
                     (c) => c.times.Contains(ticket.Time) &&
