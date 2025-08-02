@@ -54,6 +54,12 @@ namespace MovieTicketWebApi.Controllers
         {
             var data = cinemas.Where(x => x.city.Contains(movie)).ToList();
             return Ok(data);
-        }       
+        }
+        [HttpPost("Update")]
+        public async Task<IActionResult> Updates(List<TicketInformation> ticketInformation)
+        {
+            await cinemaService.Update(ticketInformation);
+            return Ok(ticketInformation);
+        }
     }
 }
