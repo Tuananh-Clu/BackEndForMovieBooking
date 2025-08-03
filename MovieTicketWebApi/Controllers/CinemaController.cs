@@ -42,7 +42,7 @@ namespace MovieTicketWebApi.Controllers
 
         [HttpPost("Read_Json")]
         [RequestSizeLimit(200_000_000)]
-        public async Task<IActionResult> readFile(IFormFile file)
+        public async Task<IActionResult> readFile([FromForm]IFormFile file)
         {
             using var reader = new StreamReader(file.OpenReadStream());
             var json = await reader.ReadToEndAsync();
