@@ -42,12 +42,12 @@ namespace MovieTicketWebApi.Controllers
 
         [HttpPost("Read_Json")]
         [RequestSizeLimit(200_000_000)]
-        public async Task<IActionResult> readFile(IFormFile file)
+        public async Task<IActionResult> readFile(IFormFile file, [FromQuery]bool isChecked)
         {
             using var reader = new StreamReader(file.OpenReadStream());
             var json = await reader.ReadToEndAsync();
             var result = JsonSerializer.Deserialize<List<Cinema>>(json);
-            await cinemaService.InsertAsync(result);
+            await cinemaService.InsertAsync(result,isChecked);
             return Ok(result);
         }
         [HttpPost("Filter_movie")]
