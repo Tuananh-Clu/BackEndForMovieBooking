@@ -38,7 +38,7 @@ builder.Services.AddCors(options =>
 
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
-
+builder.WebHost.ConfigureKestrel(options =>options.Limits.MaxRequestBodySize =200*1024*1024);
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     var settings = builder.Configuration.GetSection("MongoDbSettings").Get<MongoDbSettings>();
