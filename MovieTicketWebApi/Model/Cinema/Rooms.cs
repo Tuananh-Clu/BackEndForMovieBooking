@@ -6,7 +6,6 @@ namespace MovieTicketWebApi.Model
     {
         public string id { get; set; }
         public string name { get; set; }
-        public List<Seat> seats { get; set; }
         public List<Showtime> showtimes { get; set; }
 
     }
