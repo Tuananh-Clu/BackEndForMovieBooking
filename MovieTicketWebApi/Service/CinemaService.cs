@@ -27,24 +27,27 @@ namespace MovieTicketWebApi.Service
         {
             foreach (var ticket in tickets)
             {
-                var cinema = await mongoCollection.Find((c) => c.address == ticket.Location).FirstOrDefaultAsync();
+                var cinema = await mongoCollection.Find(c => c.address == ticket.Location).FirstOrDefaultAsync();
                 if (cinema == null) continue;
-                var room = cinema.rooms.FirstOrDefault(c => c.name == ticket.RoomId);
-                if (room == null) continue;
-                var showtime = room.showtimes.FirstOrDefault(
-                    (c) => c.times.Contains(ticket.Time) &&
-                    c.date == ticket.Date &&
-                    c.movie.title == ticket.MovieTitle
 
-                    );
-                if (showtime == null) continue;
-                var seat = room.seats.FirstOrDefault(c => c.id == ticket.Id &&
-                c.isOrdered == true
+                var room = cinema.rooms.FirstOrDefault(r => r.name == ticket.RoomId);
+                if (room == null) continue;
+
+                var showtime = room.showtimes.FirstOrDefault(s =>
+                    s.times.Contains(ticket.Time) &&
+                    s.date == ticket.Date &&
+                    s.movie.title == ticket.MovieTitle
                 );
+                if (showtime == null) continue;
+
+                var seatIndex = room.seats.FindIndex(s => s.id == ticket.Id);
+                if (seatIndex == -1) continue;
+
+                room.seats[seatIndex].isOrdered = true;
+
                 await mongoCollection.ReplaceOneAsync(c => c.id == cinema.id, cinema);
             }
-
-
         }
+
     }
 }
