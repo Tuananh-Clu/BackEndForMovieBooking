@@ -29,7 +29,7 @@ namespace MovieTicketWebApi.Service
             {
                 var cinema = await mongoCollection.Find((c) => c.address == ticket.Location).FirstOrDefaultAsync();
                 if (cinema == null) continue;
-                var room = cinema.rooms.FirstOrDefault(c => c.id == ticket.RoomId);
+                var room = cinema.rooms.FirstOrDefault(c => c.name == ticket.RoomId);
                 if (room == null) continue;
                 var showtime = room.showtimes.FirstOrDefault(
                     (c) => c.times.Contains(ticket.Time) &&
