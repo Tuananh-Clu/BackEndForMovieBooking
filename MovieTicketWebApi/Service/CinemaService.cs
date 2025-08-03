@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
@@ -18,10 +19,16 @@ namespace MovieTicketWebApi.Service
         {
             return await mongoCollection.Find(_ => true).ToListAsync();
         }
-        public async Task InsertAsync(List<Cinema> cinemas)
+        public async Task InsertAsync(List<Cinema> cinemas, [FromQuery]bool isFirst)
         {
-            await mongoCollection.DeleteManyAsync(_=>true);
-            await mongoCollection.InsertManyAsync(cinemas);
+            if (isFirst)
+            {
+                await mongoCollection.DeleteManyAsync(_ => true);
+            }
+            else
+            {
+                await mongoCollection.InsertManyAsync(cinemas);
+            }
         }
         public async Task Update(List<TicketInformation> tickets)
         {
