@@ -40,10 +40,10 @@ namespace MovieTicketWebApi.Service
                 );
                 if (showtime == null) continue;
 
-                var seatIndex = room.seats.FindIndex(s => s.id == ticket.Id);
+                var seatIndex = showtime.seats.FindIndex(s => s.id == ticket.Id);
                 if (seatIndex == -1) continue;
 
-                room.seats[seatIndex].isOrdered = true;
+                showtime.seats[seatIndex].isOrdered = true;
 
                 await mongoCollection.ReplaceOneAsync(c => c.id == cinema.id, cinema);
             }
