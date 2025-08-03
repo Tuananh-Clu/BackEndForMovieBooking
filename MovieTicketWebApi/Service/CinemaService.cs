@@ -20,7 +20,7 @@ namespace MovieTicketWebApi.Service
         }
         public async Task InsertAsync(List<Cinema> cinemas)
         {
-            
+            await mongoCollection.DeleteManyAsync(_=>true);
             await mongoCollection.InsertManyAsync(cinemas);
         }
         public async Task Update(List<TicketInformation> tickets)
