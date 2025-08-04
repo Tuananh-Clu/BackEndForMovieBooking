@@ -62,5 +62,6 @@ namespace MovieTicketWebApi.Controllers
             await cinemaService.Update(ticketInformation);
             return Ok(ticketInformation);
         }
+
     }
 }
