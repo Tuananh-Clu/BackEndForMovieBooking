@@ -100,7 +100,9 @@ namespace MovieTicketWebApi.Controllers.User
             {
                 data.Name,
                 data.Email,
-                data.tickets
+                data.role,
+                data.tickets,
+               
             });
         }
 
