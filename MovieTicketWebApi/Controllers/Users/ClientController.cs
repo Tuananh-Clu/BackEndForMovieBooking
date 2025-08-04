@@ -105,6 +105,12 @@ namespace MovieTicketWebApi.Controllers.User
                
             });
         }
+        [HttpGet("GetAllUser")]
+        public async Task<IActionResult> GetUserData()
+        {
+            var data=await mongoCollection.Find(_=>true).ToListAsync();
+            return Ok(data);
+        }
 
     }
 
