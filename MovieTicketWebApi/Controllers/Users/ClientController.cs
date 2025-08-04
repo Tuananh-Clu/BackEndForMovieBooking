@@ -122,7 +122,7 @@ namespace MovieTicketWebApi.Controllers.User
         public async Task<IActionResult> DoanhThu()
         {
             var data = await mongoCollection.Find(_=>true).ToListAsync();
-            var datauser = data.Sum(user =>user.tickets.Sum(h=>h.Count(ticket=>ticket.Price>0)));
+            var datauser = data.Sum(user =>user.tickets.Sum(h=>h.Sum(ticket=>ticket.Price)));
 
             return Ok(datauser);
         }
