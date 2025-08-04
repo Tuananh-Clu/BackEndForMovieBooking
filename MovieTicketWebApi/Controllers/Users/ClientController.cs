@@ -118,6 +118,14 @@ namespace MovieTicketWebApi.Controllers.User
             var userLength=data.Sum((c)=>c.tickets.Count);
             return Ok(userLength);
         }
+        [HttpGet("GetDoanhthuTicket")]
+        public async Task<IActionResult> DoanhThu()
+        {
+            var data = await mongoCollection.Find(_=>true).ToListAsync();
+            var userLength = data.Sum(user =>user.tickets.Sum(h=>h.Count(ticket=>ticket.Price>0)));
+
+            return Ok(userLength);
+        }
 
     }
 
