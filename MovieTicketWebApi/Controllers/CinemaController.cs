@@ -68,5 +68,16 @@ namespace MovieTicketWebApi.Controllers
             var data =await cinemaService.GetMovieBooking();
             return Ok(data.ToList());
         }
+        [HttpPost("AddShowTime")]
+        public async Task<IActionResult> AddShowTime(
+     [FromBody] Showtime showtime,
+     [FromQuery] string movieId,
+     [FromQuery] string roomId)
+        {
+             await cinemaService.AddShowtimeAsync(movieId,roomId,showtime);
+            return Ok();
+        }
+
+
     }
 }
