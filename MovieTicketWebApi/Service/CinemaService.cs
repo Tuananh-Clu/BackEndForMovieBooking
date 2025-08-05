@@ -55,6 +55,21 @@ namespace MovieTicketWebApi.Service
                 await mongoCollection.ReplaceOneAsync(c => c.id == cinema.id, cinema);
             }
         }
+        public async Task<List<Movie>> GetMovieBooking()
+        {
+            var cinemas = await mongoCollection.Find(_ => true).ToListAsync();
+
+            var allMovies = cinemas
+                .SelectMany(c => c.rooms)
+                .SelectMany(r => r.showtimes)
+                .Select(s => s.movie)
+                .GroupBy(m => m.id)
+                .Select(g => g.First())
+                .ToList();
+
+            return allMovies;
+        }
+
 
     }
 }
