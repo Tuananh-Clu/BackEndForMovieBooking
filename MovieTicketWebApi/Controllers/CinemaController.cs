@@ -62,5 +62,11 @@ namespace MovieTicketWebApi.Controllers
             await cinemaService.Update(ticketInformation);
             return Ok(ticketInformation);
         }
+        [HttpGet("MovieBooking")]
+        public async Task<IActionResult> getMovieBooking()
+        {
+            var data =await cinemaService.GetMovieBooking();
+            return Ok(data.ToList());
+        }
     }
 }

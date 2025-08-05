@@ -4,8 +4,10 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
+using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Model.User;
+using MovieTicketWebApi.Service;
 using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
@@ -126,7 +128,7 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(datauser);
         }
-
+       
     }
 
 }
