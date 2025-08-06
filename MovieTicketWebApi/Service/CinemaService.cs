@@ -81,7 +81,19 @@ namespace MovieTicketWebApi.Service
 
             await mongoCollection.UpdateOneAsync(filter, update);
         }
+        public async Task<List<MovieTicketReport>> GetSoVeBanRa()
+        {
+            var cinema=await mongoCollection.Find(_ => true).ToListAsync();
+            var DoanhThuBanRaTheoPhim = cinema.SelectMany(c => c.rooms).SelectMany(a => a.showtimes).
+             GroupBy(z => new {z.movie.id,z.movie.poster,z.movie.title}).Select((group) => new MovieTicketReport
+             {
+                 Poster=group.Key.poster,
+                 MovieId = group.Key.id,
+                 count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered==true),
 
+             }).ToList();
+            return DoanhThuBanRaTheoPhim;
+        }
 
     }
 }

@@ -78,6 +78,11 @@ namespace MovieTicketWebApi.Controllers
             return Ok();
         }
 
-
+        [HttpGet("GetSoLuongVeBan")]
+        public async Task<IActionResult> GetSoLuongVe()
+        {
+            await cinemaService.GetSoVeBanRa();
+            return Ok();
+        }
     }
 }
