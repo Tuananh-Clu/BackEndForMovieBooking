@@ -72,7 +72,7 @@ namespace MovieTicketWebApi.Service
         public async Task AddShowtimeAsync(string cinemaId, string roomId, Showtime newShowtime)
         {
             var filter = Builders<Cinema>.Filter.And(
-                Builders<Cinema>.Filter.Eq(c => c.id, cinemaId),
+                Builders<Cinema>.Filter.Eq(c => c.name, cinemaId),
                 Builders<Cinema>.Filter.ElemMatch(c => c.rooms, r => r.id == roomId)
             );
 
