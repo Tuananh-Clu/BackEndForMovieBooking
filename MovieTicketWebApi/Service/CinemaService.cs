@@ -77,6 +77,7 @@ namespace MovieTicketWebApi.Service
             );
 
             var update = Builders<Cinema>.Update.Push("rooms.$.showtimes", newShowtime);
+            Console.WriteLine(cinemaId,roomId, newShowtime);
 
             await mongoCollection.UpdateOneAsync(filter, update);
         }
