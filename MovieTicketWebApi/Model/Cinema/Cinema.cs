@@ -10,7 +10,7 @@
         public string city { get; set; }
         public string brand { get; set; }
         public string phone { get; set; }
-        public List<string> showtimes { get; set; };
+        public List<string> showtimes { get; set; }
         public bool showtimes_available { get; set; }
         public List<string> current_movies { get; set; }
         public List<string> upcoming { get; set; }
