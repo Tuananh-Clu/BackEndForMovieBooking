@@ -50,7 +50,7 @@ namespace MovieTicketWebApi.Service
                 var seatIndex = showtime.seats.FindIndex(s => s.id == ticket.Id);
                 if (seatIndex == -1) continue;
 
-                showtime.seats[seatIndex].isOrdered = true;
+                showtime.seats[seatIndex].isOrdered = "true";
 
                 await mongoCollection.ReplaceOneAsync(c => c.id == cinema.id, cinema);
             }
@@ -90,7 +90,7 @@ namespace MovieTicketWebApi.Service
                  title=group.Key.title,
                  Poster=group.Key.poster,
                  MovieId = group.Key.id,
-                 count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered==true),
+                 count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered=="true"),
 
              }).ToList();
             return DoanhThuBanRaTheoPhim;
