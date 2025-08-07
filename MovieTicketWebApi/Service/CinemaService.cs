@@ -21,13 +21,21 @@ namespace MovieTicketWebApi.Service
         }
         public async Task InsertAsync(List<Cinema> cinemas, [FromQuery]bool isFirst)
         {
-            if (isFirst)
+            try
             {
-                await mongoCollection.DeleteManyAsync(_ => true);
+                if (isFirst)
+                {
+                    await mongoCollection.DeleteManyAsync(_ => true);
+                }
+                else
+                {
+                    await mongoCollection.InsertManyAsync(cinemas);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                await mongoCollection.InsertManyAsync(cinemas);
+                Console.WriteLine("❌ Lỗi InsertAsync: " + ex.Message);
+                throw;
             }
         }
         public async Task Update(List<TicketInformation> tickets)
