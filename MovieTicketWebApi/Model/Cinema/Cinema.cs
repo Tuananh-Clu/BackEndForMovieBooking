@@ -7,6 +7,7 @@
         public string address { get; set; }
         public string image { get; set; }
         public List<Rooms> rooms { get; set; }
+        public int seats { get; set; }
         public string city { get; set; }
         public string brand { get; set; }
         public string phone { get; set; }
