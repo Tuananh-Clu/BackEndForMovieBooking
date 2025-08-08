@@ -19,7 +19,7 @@ namespace MovieTicketWebApi.Service
         {
             return await mongoCollection.Find(_ => true).ToListAsync();
         }
-        public async Task InsertAsync(List<Cinema> cinemas, [FromQuery]bool isFirst)
+        public async Task InsertAsync(List<Cinema> cinemas, [FromQuery] bool isFirst)
         {
             try
             {
@@ -85,24 +85,51 @@ namespace MovieTicketWebApi.Service
             );
 
             var update = Builders<Cinema>.Update.Push("rooms.$.showtimes", newShowtime);
-            Console.WriteLine(cinemaId,roomId, newShowtime);
+            Console.WriteLine(cinemaId, roomId, newShowtime);
 
             await mongoCollection.UpdateOneAsync(filter, update);
         }
         public async Task<List<MovieTicketReport>> GetSoVeBanRa()
         {
-            var cinema=await mongoCollection.Find(_ => true).ToListAsync();
+            var cinema = await mongoCollection.Find(_ => true).ToListAsync();
             var DoanhThuBanRaTheoPhim = cinema.SelectMany(c => c.rooms).SelectMany(a => a.showtimes).
-             GroupBy(z => new {z.movie.id,z.movie.poster,z.movie.title}).Select((group) => new MovieTicketReport
+             GroupBy(z => new { z.movie.id, z.movie.poster, z.movie.title }).Select((group) => new MovieTicketReport
              {
-                 title=group.Key.title,
-                 Poster=group.Key.poster,
+                 title = group.Key.title,
+                 Poster = group.Key.poster,
                  MovieId = group.Key.id,
-                 count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered=="true"),
+                 count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered == "true"),
 
              }).ToList();
             return DoanhThuBanRaTheoPhim;
         }
-
+        public async Task<List<DaySelect>> GetNgayChieu(string movieId)
+        {
+            var filter = await mongoCollection.Find(_ => true).ToListAsync();
+            var data = filter
+            .SelectMany(cinema => cinema.rooms.SelectMany(room => room.showtimes.Select(showtime => new
+            {
+                CinemaName = cinema.name,
+                CinemaId = cinema.id,
+                RoomName = room.name,
+                RoomId = room.id,
+                Date = showtime.date,
+                MovieTitle = showtime.movie.title,
+                time = showtime.times
+            })))
+     .Where(s => s.MovieTitle == movieId)
+     .Select(s => new DaySelect
+     {
+         Date = s.Date,
+         CinemaName = s.CinemaName,
+         CinemaId = s.CinemaId,
+         time = s.time,
+         RoomName = s.RoomName,
+         RoomId = s.RoomId
+     })
+     .Distinct()
+     .ToList();
+            return data;
+        }
     }
 }
