@@ -8,5 +8,6 @@
         public List<string> time {  get; set; }
         public string RoomName { get; set; }
         public string RoomId { get; set; }
+        public string Location { get; set; }
     }
 }

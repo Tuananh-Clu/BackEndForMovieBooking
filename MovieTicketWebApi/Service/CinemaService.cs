@@ -115,11 +115,13 @@ namespace MovieTicketWebApi.Service
                 RoomId = room.id,
                 Date = showtime.date,
                 MovieTitle = showtime.movie.title,
-                time = showtime.times
+                time = showtime.times,
+                location=cinema.address,
             })))
      .Where(s => s.MovieTitle == movieId)
      .Select(s => new DaySelect
      {
+         Location=s.location,
          Date = s.Date,
          CinemaName = s.CinemaName,
          CinemaId = s.CinemaId,
