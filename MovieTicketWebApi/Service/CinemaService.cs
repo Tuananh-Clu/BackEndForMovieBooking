@@ -117,6 +117,8 @@ namespace MovieTicketWebApi.Service
                 MovieTitle = showtime.movie.title,
                 time = showtime.times,
                 location=cinema.address,
+                movieTittle=showtime.movie.title,
+                poster=showtime.movie.poster,
             })))
      .Where(s => s.MovieTitle == movieId)
      .Select(s => new DaySelect
@@ -127,7 +129,10 @@ namespace MovieTicketWebApi.Service
          CinemaId = s.CinemaId,
          time = s.time,
          RoomName = s.RoomName,
-         RoomId = s.RoomId
+         RoomId = s.RoomId,
+         MovieTitle= s.MovieTitle,
+         Poster=s.poster,
+         
      })
      .Distinct()
      .ToList();
