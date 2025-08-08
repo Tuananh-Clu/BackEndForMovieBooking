@@ -20,6 +20,6 @@ namespace MovieTicketWebApi.Model.Ticket
         [JsonPropertyName("Location")]
         public string Location { get; set; } = "";
         public string City { get; set; } = "";
-        public string IsSelected { get; set; } = "false";
+        public string IsSelected { get; set; } = "true";
     }
 }
