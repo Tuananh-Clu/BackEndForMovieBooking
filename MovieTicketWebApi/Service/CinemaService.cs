@@ -42,27 +42,46 @@ namespace MovieTicketWebApi.Service
         {
             foreach (var ticket in tickets)
             {
-                var cinema = await mongoCollection.Find(c => c.address == ticket.Location).FirstOrDefaultAsync();
-                if (cinema == null) continue;
+                var cinema = await mongoCollection.Find(c => c.address.Trim().ToLower() == ticket.Location.Trim().ToLower())
+                                                  .FirstOrDefaultAsync();
+                if (cinema == null)
+                {
+                    Console.WriteLine($"Không tìm thấy rạp: {ticket.Location}");
+                    continue;
+                }
 
-                var room = cinema.rooms.FirstOrDefault(r => r.name == ticket.RoomId);
-                if (room == null) continue;
+                var room = cinema.rooms.FirstOrDefault(r => r.name.Trim().ToLower() == ticket.RoomId.Trim().ToLower());
+                if (room == null)
+                {
+                    Console.WriteLine($"Không tìm thấy phòng: {ticket.RoomId}");
+                    continue;
+                }
 
                 var showtime = room.showtimes.FirstOrDefault(s =>
-                    s.times.Contains(ticket.Time) &&
-                    s.date == ticket.Date &&
-                    s.movie.title == ticket.MovieTitle
+                    s.times.Any(t => t.Trim() == ticket.Time.Trim()) &&
+                    s.date.Trim() == ticket.Date.Trim() &&
+                    s.movie.title.Trim().ToLower() == ticket.MovieTitle.Trim().ToLower()
                 );
-                if (showtime == null) continue;
+                if (showtime == null)
+                {
+                    Console.WriteLine($"Không tìm thấy suất chiếu: {ticket.MovieTitle} - {ticket.Time} - {ticket.Date}");
+                    continue;
+                }
 
-                var seatIndex = showtime.seats.FindIndex(s => s.id == ticket.Id);
-                if (seatIndex == -1) continue;
+                var seat = showtime.seats.FirstOrDefault(s => s.id.Trim().ToLower() == ticket.Id.Trim().ToLower());
+                if (seat == null)
+                {
+                    Console.WriteLine($"Không tìm thấy ghế: {ticket.Id}");
+                    continue;
+                }
 
-                showtime.seats[seatIndex].isOrdered = "true";
+                seat.isOrdered = "true";
+                Console.WriteLine($"Cập nhật ghế {seat.id} thành isOrdered=true");
 
                 await mongoCollection.ReplaceOneAsync(c => c.id == cinema.id, cinema);
             }
         }
+
         public async Task<List<Movie>> GetMovieBooking()
         {
             var cinemas = await mongoCollection.Find(_ => true).ToListAsync();
