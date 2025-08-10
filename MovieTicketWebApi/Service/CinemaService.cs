@@ -102,10 +102,10 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
-          
+
             var filter = Builders<Cinema>.Filter.ElemMatch(
                 c => c.rooms,
-                r => r.showtimes.Any(s => s.movie.title == movieId)
+                r => r.showtimes.Any(s => s.movie.title.Trim().ToLower() == movieId.Trim().ToLower())
             );
 
             var cinemas = await mongoCollection
