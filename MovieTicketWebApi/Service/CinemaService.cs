@@ -102,39 +102,34 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
-            var filter = await mongoCollection.Find(_ => true).ToListAsync();
-            var data = filter
-            .SelectMany(cinema => cinema.rooms.SelectMany(room => room.showtimes.Select(showtime => new
-            {
-                CinemaName = cinema.name,
-                CinemaId = cinema.id,
-                RoomName = room.name,
-                RoomId = room.id,
-                Date = showtime.date,
-                MovieTitle = showtime.movie.title,
-                time = showtime.times,
-                location=cinema.address,
-                movieTittle=showtime.movie.title,
-                poster=showtime.movie.poster,
-            })))
-     .Where(s => s.MovieTitle == movieId)
-     .Select(s => new DaySelect
-     {
-         Location=s.location,
-         Date = s.Date,
-         CinemaName = s.CinemaName,
-         CinemaId = s.CinemaId,
-         time = s.time,
-         RoomName = s.RoomName,
-         RoomId = s.RoomId,
-         MovieTitle= s.MovieTitle,
-         Poster=s.poster,
-         
-     })
-     .Distinct()
-     .ToList();
-            return data;
+            var projection = Builders<Cinema>.Projection.Expression(c =>
+                c.rooms.SelectMany(room => room.showtimes
+                    .Where(showtime => showtime.movie.id == movieId) 
+                    .Select(showtime => new DaySelect
+                    {
+                        Location = c.address,
+                        Date = showtime.date,
+                        CinemaName = c.name,
+                        CinemaId = c.id,
+                        time = showtime.times,
+                        RoomName = room.name,
+                        RoomId = room.id,
+                        MovieTitle = showtime.movie.title,
+                        Poster = showtime.movie.poster
+                    })
+                )
+            );
+
+            var data = await mongoCollection
+                .Find(Builders<Cinema>.Filter.ElemMatch(
+                    c => c.rooms, r => r.showtimes.Any(s => s.movie.id == movieId)
+                ))
+                .Project(projection)
+                .ToListAsync();
+
+            return data.SelectMany(x => x).Distinct().ToList();
         }
+
         public async Task<List<Seat>> Seats(string roomid, string title, string date, string time)
         {
             var cinema = await mongoCollection

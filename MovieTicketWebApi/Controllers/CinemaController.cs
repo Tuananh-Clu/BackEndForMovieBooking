@@ -71,7 +71,7 @@ namespace MovieTicketWebApi.Controllers
         [HttpGet("GetSeat")]
         public async Task<IActionResult> GetSeat([FromQuery] string movieId, [FromQuery] string roomId, [FromQuery] string ngay, [FromQuery] string time)
         {
-            var data = await cinemaService.Seats(movieId, roomId,ngay,time);
+            var data = await cinemaService.Seats(roomId, movieId, ngay,time);
             return Ok(data);
         }
         [HttpGet("GetDanhSachChieu")]
