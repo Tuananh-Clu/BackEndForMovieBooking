@@ -102,25 +102,31 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
+          
+            var filter = Builders<Cinema>.Filter.ElemMatch(
+                c => c.rooms,
+                r => r.showtimes.Any(s => s.movie.id == movieId)
+            );
+
             var cinemas = await mongoCollection
-                .Find(c => c.rooms.Any(r => r.showtimes.Any(s => s.movie.id == movieId)))
+                .Find(filter)
                 .ToListAsync();
 
             var result = cinemas
                 .SelectMany(c => c.rooms
-                    .SelectMany(room => room.showtimes
-                        .Where(showtime => showtime.movie.id == movieId)
-                        .Select(showtime => new DaySelect
+                    .SelectMany(r => r.showtimes
+                        .Where(s => s.movie.id == movieId)
+                        .Select(s => new DaySelect
                         {
                             Location = c.address,
-                            Date = showtime.date,
+                            Date = s.date,
                             CinemaName = c.name,
                             CinemaId = c.id,
-                            time = showtime.times,
-                            RoomName = room.name,
-                            RoomId = room.id,
-                            MovieTitle = showtime.movie.title,
-                            Poster = showtime.movie.poster
+                            time = s.times,
+                            RoomName = r.name,
+                            RoomId = r.id,
+                            MovieTitle = s.movie.title,
+                            Poster = s.movie.poster
                         })
                     )
                 )
@@ -129,6 +135,7 @@ namespace MovieTicketWebApi.Service
 
             return result;
         }
+
 
 
 

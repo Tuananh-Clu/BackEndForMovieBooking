@@ -32,7 +32,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("https://ap-cinema.vercel.app")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod().AllowCredentials();
     });
 });
 
