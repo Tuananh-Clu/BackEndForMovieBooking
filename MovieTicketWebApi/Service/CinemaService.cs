@@ -121,7 +121,7 @@ namespace MovieTicketWebApi.Service
 
             var filter = Builders<Cinema>.Filter.ElemMatch(
                 c => c.rooms,
-                r => r.showtimes.Any(s => s.movie.id == movieId)
+                r => r.showtimes.Any(s => s.movie.title == movieId)
             );
 
             var cinemas = await mongoCollection
@@ -132,7 +132,7 @@ namespace MovieTicketWebApi.Service
             var daySelectList = cinemas
                 .SelectMany(c => c.rooms
                     .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.id == movieId)
+                        .Where(s => s.movie.title == movieId)
                         .Select(s => new DaySelect
                         {
                             Location = c.address,
