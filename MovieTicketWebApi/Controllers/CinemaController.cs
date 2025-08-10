@@ -68,6 +68,12 @@ namespace MovieTicketWebApi.Controllers
             var data =await cinemaService.GetMovieBooking();
             return Ok(data.ToList());
         }
+        [HttpGet("GetSeat")]
+        public async Task<IActionResult> GetSeat([FromQuery] string movieId, [FromQuery] string roomId, [FromQuery] string ngay, [FromQuery] string time)
+        {
+            var data = await cinemaService.Seats(movieId, roomId,ngay,time);
+            return Ok(data);
+        }
         [HttpGet("GetDanhSachChieu")]
         public async Task<IActionResult> GetDaySelcet([FromQuery] string movieid)
         {

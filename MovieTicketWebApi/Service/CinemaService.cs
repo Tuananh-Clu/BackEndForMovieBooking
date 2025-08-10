@@ -135,5 +135,33 @@ namespace MovieTicketWebApi.Service
      .ToList();
             return data;
         }
+        public async Task<List<Seat>> Seats(string roomid, string title, string date, string time)
+        {
+            var cinema = await mongoCollection
+                .Find(c => c.rooms.Any(r => r.id == roomid
+                    && r.showtimes.Any(s =>
+                        s.movie.title == title &&
+                        s.date == date &&
+                        s.times.Contains(time)
+                    )
+                ))
+                .FirstOrDefaultAsync();
+
+            if (cinema == null)
+                return new List<Seat>();
+
+            return cinema.rooms
+                .Where(r => r.id == roomid)
+                .SelectMany(r => r.showtimes)
+                .Where(s =>
+                    s.movie.title == title &&
+                    s.date == date &&
+                    s.times.Contains(time)
+                )
+                .SelectMany(s => s.seats)
+                .ToList();
+        }
+
+
     }
 }
