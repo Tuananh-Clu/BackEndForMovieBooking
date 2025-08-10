@@ -58,8 +58,6 @@ namespace MovieTicketWebApi.Service
                             if (seat != null)
                             {
                                 seat.isOrdered = "true";
-                                seat.type = ticket.SeatType;
-                                seat.price = ticket.Price;
                             }
                         }
                     }
@@ -112,12 +110,12 @@ namespace MovieTicketWebApi.Service
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
             var projection = Builders<Cinema>.Projection
-       .Include(c => c.id)
-       .Include(c => c.name)
-       .Include(c => c.address)
-       .Include("rooms.id")
-       .Include("rooms.name")
-       .Include("rooms.showtimes");
+                .Include(c => c.id)
+                  .Include(c => c.name)
+                   .Include(c => c.address)
+                     .Include("rooms.id")
+                         .Include("rooms.name")
+                           .Include("rooms.showtimes");
 
             var filter = Builders<Cinema>.Filter.ElemMatch(
                 c => c.rooms,
