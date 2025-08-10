@@ -40,22 +40,31 @@ namespace MovieTicketWebApi.Service
         }
         public async Task Update(List<TicketInformation> tickets)
         {
-            var writes=new List<WriteModel<Cinema>>();
             foreach (var ticket in tickets)
             {
-                var filter = Builders<Cinema>.Filter.Eq((a) => a.address, ticket.Location);
-                var update = Builders<Cinema>.Update.Set("rooms.$[room].showtimes.$[showtime].seats.$[seat].isOrdered", "true");
-                var arrayfilter = new[]
+                var filter = Builders<Cinema>.Filter.And(
+                    Builders<Cinema>.Filter.Eq(a => a.address, ticket.Location),
+                    Builders<Cinema>.Filter.ElemMatch(a => a.rooms, r => r.id == ticket.RoomId));
+                var update=await mongoCollection.Find(filter).FirstOrDefaultAsync();
+                if (update != null)
                 {
-                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("room.id", ticket.RoomId)),
-                    new BsonDocumentArrayFilterDefinition<BsonDocument>(new BsonDocument("seat.id", ticket.Id)),
-                };
-                var updatemodel = new UpdateManyModel<Cinema>(filter, update)
-                {
-                    ArrayFilters = arrayfilter
-                };
-                writes.Add(updatemodel);
-                await mongoCollection.BulkWriteAsync(writes);   
+                    var room = update.rooms.FirstOrDefault(r => r.id == ticket.RoomId);
+                    if (room != null)
+                    {
+                        var showtime = room.showtimes.FirstOrDefault(s => s.date == ticket.Date && s.times.Contains(ticket.Time) && s.movie.title == ticket.MovieTitle);
+                        if (showtime != null)
+                        {
+                            var seat = showtime.seats.FirstOrDefault(s => s.id == ticket.Id);
+                            if (seat != null)
+                            {
+                                seat.isOrdered = "true";
+                                seat.type = ticket.SeatType;
+                                seat.price = ticket.Price;
+                            }
+                        }
+                    }
+                    await mongoCollection.ReplaceOneAsync(filter, update);
+                }
 
             }
         }
@@ -112,7 +121,7 @@ namespace MovieTicketWebApi.Service
             var daySelectList = cinemas
                 .SelectMany(c => c.rooms
                     .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.id == movieId)
+                        .Where(s => s.movie.title == movieId)
                         .Select(s => new DaySelect
                         {
                             Location = c.address,
