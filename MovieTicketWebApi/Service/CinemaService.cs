@@ -102,17 +102,14 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
-
             var filter = Builders<Cinema>.Filter.ElemMatch(
                 c => c.rooms,
-                r => r.showtimes.Any(s => s.movie.title.Trim().ToLower() == movieId.Trim().ToLower())
+                r => r.showtimes.Any(s => s.movie.id == movieId)
             );
 
-            var cinemas = await mongoCollection
-                .Find(filter)
-                .ToListAsync();
+            var cinemas = await mongoCollection.Find(filter).ToListAsync();
 
-            var result = cinemas
+            var daySelectList = cinemas
                 .SelectMany(c => c.rooms
                     .SelectMany(r => r.showtimes
                         .Where(s => s.movie.id == movieId)
@@ -130,11 +127,20 @@ namespace MovieTicketWebApi.Service
                         })
                     )
                 )
-                .Distinct()
+                .GroupBy(d => new
+                {
+                    d.Location,
+                    d.Date,
+                    d.CinemaId,
+                    d.RoomId,
+                    d.MovieTitle,
+                })
+                .Select(g => g.First())
                 .ToList();
 
-            return result;
+            return daySelectList;
         }
+
         public async Task<List<TheaterInFo>> getInfoTheater(string location,string room,string movieTitle)
         {
             var filter = Builders<Cinema>.Filter.And(
