@@ -102,33 +102,48 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<DaySelect>> GetNgayChieu(string movieId)
         {
-            var projection = Builders<Cinema>.Projection.Expression(c =>
-                c.rooms.SelectMany(room => room.showtimes
-                    .Where(showtime => showtime.movie.id == movieId) 
-                    .Select(showtime => new DaySelect
-                    {
-                        Location = c.address,
-                        Date = showtime.date,
-                        CinemaName = c.name,
-                        CinemaId = c.id,
-                        time = showtime.times,
-                        RoomName = room.name,
-                        RoomId = room.id,
-                        MovieTitle = showtime.movie.title,
-                        Poster = showtime.movie.poster
-                    })
-                )
+            var filter = Builders<Cinema>.Filter.ElemMatch(
+                c => c.rooms,
+                r => r.showtimes.Any(s => s.movie.id == movieId)
             );
 
-            var data = await mongoCollection
-                .Find(Builders<Cinema>.Filter.ElemMatch(
-                    c => c.rooms, r => r.showtimes.Any(s => s.movie.id == movieId)
-                ))
-                .Project(projection)
+            var projection = Builders<Cinema>.Projection
+                .Include(c => c.address)
+                .Include(c => c.name)
+                .Include(c => c.id)
+                .Include("rooms.name")
+                .Include("rooms.id")
+                .Include("rooms.showtimes.date")
+                .Include("rooms.showtimes.times")
+                .Include("rooms.showtimes.movie");
+
+            var cinemas = await mongoCollection
+                .Find(filter)
+                .Project<Cinema>(projection)
                 .ToListAsync();
 
-            return data.SelectMany(x => x).Distinct().ToList();
+            var result = cinemas.SelectMany(c =>
+                c.rooms.SelectMany(r =>
+                    r.showtimes
+                        .Where(s => s.movie.id == movieId)
+                        .Select(s => new DaySelect
+                        {
+                            Location = c.address,
+                            Date = s.date,
+                            CinemaName = c.name,
+                            CinemaId = c.id,
+                            time = s.times,
+                            RoomName = r.name,
+                            RoomId = r.id,
+                            MovieTitle = s.movie.title,
+                            Poster = s.movie.poster
+                        })
+                )
+            ).Distinct().ToList();
+
+            return result;
         }
+
 
         public async Task<List<Seat>> Seats(string roomid, string title, string date, string time)
         {
