@@ -135,7 +135,25 @@ namespace MovieTicketWebApi.Service
 
             return result;
         }
+        public async Task<List<TheaterInFo>> getInfoTheater(string location,string room,string movieTitle)
+        {
+            var filter = Builders<Cinema>.Filter.And(
+                   Builders<Cinema>.Filter.Eq(c => c.address,location ),
+                   Builders<Cinema>.Filter.ElemMatch(c => c.rooms, r => r.id == room)
+               );
+            var cinemas = await mongoCollection.Find(filter).ToListAsync();
+            var result = cinemas.SelectMany(c => c.rooms.SelectMany(a => a.showtimes.Where(s => s.movie.title == movieTitle)
+                .Select(d => new TheaterInFo
+                {
+                    Theateraddress = c.address,
+                    Theatername = c.name,
+                    Poster = d.movie.poster,
+                    City=c.city
 
+                }))).Distinct().ToList();
+            return result;
+
+        }
 
 
 

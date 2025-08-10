@@ -96,6 +96,12 @@ namespace MovieTicketWebApi.Controllers
             var data=await cinemaService.GetSoVeBanRa();
             return Ok(data);
         }
+        [HttpGet("LayThongTinRap")]
+        public async Task<IActionResult> LayThongTinRap([FromQuery] string location, [FromQuery] string room, [FromQuery] string title)
+        {
+            var data = await cinemaService.getInfoTheater(location, room, title);
+            return Ok(data);
+        }
     }
    
 
