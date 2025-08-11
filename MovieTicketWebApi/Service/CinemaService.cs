@@ -237,11 +237,13 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<BookingData>> GetBooking()
         {
-            var data= await mongoCollection.Find(_ => true).Project(c => new BookingData
-            {
-                Name = c.name,
-                Room = c.rooms
-            }).ToListAsync();
+            var filter = Builders<Cinema>.Projection
+                .Include(c => c.name)
+                .Include("rooms.id");
+            var data=await mongoCollection
+                .Find(_ => true)
+                .Project<BookingData>(filter)
+                .ToListAsync();
             return data;
         }
 
