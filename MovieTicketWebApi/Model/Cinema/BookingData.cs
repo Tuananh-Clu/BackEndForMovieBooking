@@ -1,8 +1,13 @@
-﻿namespace MovieTicketWebApi.Model.Cinema
+﻿using MongoDB.Bson.Serialization.Attributes;
+
+namespace MovieTicketWebApi.Model.Cinema
 {
     public class BookingData
     {
+        [BsonElement("name")]
         public string Name { get; set; }
-        public List<Rooms> Room { get; set; }
+
+        [BsonElement("rooms")]
+        public List<Rooms> Rooms { get; set; }
     }
 }

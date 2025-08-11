@@ -239,7 +239,8 @@ namespace MovieTicketWebApi.Service
         {
             var filter = Builders<Cinema>.Projection
                 .Include(c => c.name)
-                .Include("rooms.id");
+                .Include("rooms.id").
+                Exclude("_id");
             var data=await mongoCollection
                 .Find(_ => true)
                 .Project<BookingData>(filter)
