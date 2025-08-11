@@ -117,7 +117,7 @@ namespace MovieTicketWebApi.Controllers.User
         public async Task<IActionResult> GetQuantityTickets()
         {
             var data=await mongoCollection.Find(_=>true).ToListAsync();
-            var userLength=data.Sum((c)=>c.tickets.Count);
+            var userLength=data.SelectMany(user=>user.tickets).SelectMany(ticket=>ticket).Count();
             return Ok(userLength);
         }
         [HttpGet("GetDoanhthuTicket")]
