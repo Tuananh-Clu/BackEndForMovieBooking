@@ -51,9 +51,9 @@ namespace MovieTicketWebApi.Controllers
             return Ok(result);
         }
         [HttpPost("Filter_movie")]
-        public async Task<IActionResult> Filter([FromQuery] string movie, [FromBody] List<Cinema> cinemas)
+        public async Task<IActionResult> Filter([FromQuery] string movie, [FromBody] List<TheaterProp> cinemas)
         {
-            var data = cinemas.Where(x => x.city.Contains(movie)).ToList();
+            var data = cinemas.Where(x => x.City.Contains(movie)).ToList();
             return Ok(data);
         }
         [HttpPost("Update")]
