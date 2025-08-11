@@ -88,7 +88,8 @@ namespace MovieTicketWebApi.Service
                 Id = s.id,
                 Name = s.name,
                 Address = s.address,
-                Image = s.image
+                Image = s.image,
+                City=s.city
 
             }).ToListAsync();
             var theaterProps=theater.Select(theater => new TheaterProp
@@ -96,7 +97,8 @@ namespace MovieTicketWebApi.Service
                 Id = theater.Id,
                 Name = theater.Name,
                 Address = theater.Address,
-                Image = theater.Image
+                Image = theater.Image,
+                City = theater.City
             }).ToList();
             return theaterProps;
         }
