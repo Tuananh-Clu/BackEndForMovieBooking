@@ -69,7 +69,7 @@ namespace MovieTicketWebApi.Service
 
         public async Task<List<Movie>> GetMovieBooking()
         {
-            var cinemas = await mongoCollection.Find(_ => true).ToListAsync();
+            var cinemas = await mongoCollection.Find(_ => true).Project(s=>new { s.rooms }).ToListAsync();
 
             var allMovies = cinemas
                 .SelectMany(c => c.rooms)
@@ -80,6 +80,25 @@ namespace MovieTicketWebApi.Service
                 .ToList();
 
             return allMovies;
+        }
+        public async Task<List<TheaterProp>> GetTheaterPropsAsync()
+        {
+            var theater=await mongoCollection.Find(_=>true).Project(s=>new TheaterProp
+            {
+                Id = s.id,
+                Name = s.name,
+                Address = s.address,
+                Image = s.image
+
+            }).ToListAsync();
+            var theaterProps=theater.Select(theater => new TheaterProp
+            {
+                Id = theater.Id,
+                Name = theater.Name,
+                Address = theater.Address,
+                Image = theater.Image
+            }).ToList();
+            return theaterProps;
         }
         public async Task AddShowtimeAsync(string cinemaId, string roomId, Showtime newShowtime)
         {
@@ -197,6 +216,22 @@ namespace MovieTicketWebApi.Service
                 )
                 .SelectMany(s => s.seats)
                 .ToList();
+        }
+        public async Task<List<FullInfoTheater>> getTheaterBtId(string id)
+        {
+            var filter=Builders<Cinema>.Filter.Eq(c => c.id, id);
+            var result=await mongoCollection.Find(filter).Project(c => new FullInfoTheater
+            {
+                Id = c.id,
+                Name = c.name,
+                Address = c.address,
+                Image = c.image,
+                City = c.city,
+                Brand = c.brand,
+                Phone = c.phone,
+                Rooms = c.rooms
+            }).ToListAsync();
+            return result;
         }
 
 

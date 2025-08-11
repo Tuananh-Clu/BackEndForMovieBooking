@@ -102,7 +102,18 @@ namespace MovieTicketWebApi.Controllers
             var data = await cinemaService.getInfoTheater(location, room, title);
             return Ok(data);
         }
-    }
+        [HttpGet("GetTheater")]
+        public async Task<IActionResult> GetTheater()
+        {
+            var data=await cinemaService.GetTheaterPropsAsync();
+            return Ok(data);
+        }
+        [HttpGet("GetTheaterById")]
+        public async Task<IActionResult> GetTheaterById([FromQuery] string id)
+        {
+            var data = await cinemaService.getTheaterBtId(id);
+            return Ok(data);
+        }
    
 
 }
