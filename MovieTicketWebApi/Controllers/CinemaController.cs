@@ -24,34 +24,34 @@ namespace MovieTicketWebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-          
-                try
-                {
-                    var result = await cinemaService.GetCinemasAsync();
-                    return Ok(result);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                    return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-                }
-            
+
+            try
+            {
+                var result = await cinemaService.GetCinemasAsync();
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+
 
         }
 
         [HttpPost("Read_Json")]
         [RequestSizeLimit(200_000_000)]
-        public async Task<IActionResult> readFile(IFormFile file, [FromQuery]bool isChecked)
+        public async Task<IActionResult> readFile(IFormFile file, [FromQuery] bool isChecked)
         {
             using var reader = new StreamReader(file.OpenReadStream());
             var json = await reader.ReadToEndAsync();
             var result = JsonSerializer.Deserialize<List<Cinema>>(json);
-            await cinemaService.InsertAsync(result,isChecked);
+            await cinemaService.InsertAsync(result, isChecked);
             return Ok(result);
         }
         [HttpPost("Filter_movie")]
-        public async Task<IActionResult> Filter([FromQuery]string movie,[FromBody]List<Cinema> cinemas)
+        public async Task<IActionResult> Filter([FromQuery] string movie, [FromBody] List<Cinema> cinemas)
         {
             var data = cinemas.Where(x => x.city.Contains(movie)).ToList();
             return Ok(data);
@@ -65,35 +65,35 @@ namespace MovieTicketWebApi.Controllers
         [HttpGet("MovieBooking")]
         public async Task<IActionResult> getMovieBooking()
         {
-            var data =await cinemaService.GetMovieBooking();
+            var data = await cinemaService.GetMovieBooking();
             return Ok(data.ToList());
         }
         [HttpGet("GetSeat")]
         public async Task<IActionResult> GetSeat([FromQuery] string movieId, [FromQuery] string roomId, [FromQuery] string ngay, [FromQuery] string time)
         {
-            var data = await cinemaService.Seats(roomId, movieId, ngay,time);
+            var data = await cinemaService.Seats(roomId, movieId, ngay, time);
             return Ok(data);
         }
         [HttpGet("GetDanhSachChieu")]
         public async Task<IActionResult> GetDaySelcet([FromQuery] string movieid)
         {
-            var data=await cinemaService.GetNgayChieu(movieid);
+            var data = await cinemaService.GetNgayChieu(movieid);
             return Ok(data);
         }
-       [HttpPost("AddShowTime")]
+        [HttpPost("AddShowTime")]
         public async Task<IActionResult> AddShowTime(
-     [FromBody] Showtime showtime,
-     [FromQuery] string movieId,
-     [FromQuery] string roomId)
+      [FromBody] Showtime showtime,
+      [FromQuery] string movieId,
+      [FromQuery] string roomId)
         {
-             await cinemaService.AddShowtimeAsync(movieId,roomId,showtime);
+            await cinemaService.AddShowtimeAsync(movieId, roomId, showtime);
             return Ok();
         }
 
         [HttpGet("GetSoLuongVeBan")]
         public async Task<IActionResult> GetSoLuongVe()
         {
-            var data=await cinemaService.GetSoVeBanRa();
+            var data = await cinemaService.GetSoVeBanRa();
             return Ok(data);
         }
         [HttpGet("LayThongTinRap")]
@@ -105,7 +105,7 @@ namespace MovieTicketWebApi.Controllers
         [HttpGet("GetTheater")]
         public async Task<IActionResult> GetTheater()
         {
-            var data=await cinemaService.GetTheaterPropsAsync();
+            var data = await cinemaService.GetTheaterPropsAsync();
             return Ok(data);
         }
         [HttpGet("GetTheaterById")]
@@ -114,6 +114,7 @@ namespace MovieTicketWebApi.Controllers
             var data = await cinemaService.getTheaterBtId(id);
             return Ok(data);
         }
+    }
    
 
 }
