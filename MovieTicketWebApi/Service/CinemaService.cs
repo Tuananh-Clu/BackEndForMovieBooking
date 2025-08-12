@@ -247,6 +247,43 @@ namespace MovieTicketWebApi.Service
                 .ToListAsync();
             return data;
         }
+        public async Task<List<DoanhThuTheoRap>> getDoanhThu()
+        {
+            var cinemas = await mongoCollection.Find(_ => true).ToListAsync();
+
+            var data = cinemas.Select(c => new DoanhThuTheoRap
+            {
+                name = c.name,
+
+                     quantity = c.rooms
+                    .SelectMany(r => r.showtimes)
+                    .SelectMany(s => s.seats)
+                    .Count(seat => seat.isOrdered == "true"),
+
+                TotalPrice = c.rooms
+                    .SelectMany(r => r.showtimes)
+                    .SelectMany(s => s.seats)
+                    .Where(seat => seat.isOrdered == "true")
+                    .Sum(seat => seat.price),
+                Avune = Enumerable.Range(1, 12)
+                    .Select(month =>
+                        c.rooms
+                         .SelectMany(r => r.showtimes)
+                         .Where(st =>
+                         {
+                             DateTime dt;
+                             return DateTime.TryParse(st.date, out dt) && dt.Month == month;
+                         })
+                         .SelectMany(st => st.seats)
+                         .Where(seat => seat.isOrdered == "true")
+                         .Sum(seat => seat.price)
+                    )
+                    .ToList()
+            }).ToList();
+
+            return data;
+        }
+
 
     }
 }

@@ -120,6 +120,12 @@ namespace MovieTicketWebApi.Controllers
             var data = await cinemaService.GetBooking();
             return Ok(data);
         }
+        [HttpGet("GetDoanhThuRap")]
+        public async Task<IActionResult> GetDoanhThuRap()
+        {
+            var data = await cinemaService.getDoanhThu();
+            return Ok(data);
+        }
     }
    
 
