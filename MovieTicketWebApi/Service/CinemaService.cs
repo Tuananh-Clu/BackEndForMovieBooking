@@ -287,7 +287,7 @@ namespace MovieTicketWebApi.Service
         {
             var filter = Builders<Cinema>.Filter.ElemMatch(c => c.rooms,
                 Builders<Rooms>.Filter.ElemMatch(r => r.showtimes,
-                    Builders<Showtime>.Filter.Eq(s => s.movie.id, movieId) 
+                    Builders<Showtime>.Filter.Eq(s => s.movie.title, movieId) 
                 ));
 
             var projection = Builders<Cinema>.Projection.Expression(c => new ShowTimeForMovieBooking
