@@ -298,6 +298,7 @@ namespace MovieTicketWebApi.Service
                 var data = cinemas.Select(c => new ShowTimeForMovieBooking
                 {
                     Name = c.name,
+                    Title = movieTitle,
                     Times = c.rooms
                         .SelectMany(r => r.showtimes ?? new List<Showtime>())
                         .Where(s => s.movie?.title == movieTitle)

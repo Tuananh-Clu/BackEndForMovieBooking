@@ -4,5 +4,6 @@
     {
         public string Name { get; set; }
         public List<string> Times { get; set; }
+        public string Title { get; set; }
     }
 }
