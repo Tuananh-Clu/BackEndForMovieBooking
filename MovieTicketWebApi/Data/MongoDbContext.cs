@@ -21,7 +21,6 @@ namespace MovieTicketWebApi.Data
         public IMongoCollection<MoviesInfomation> Storage => mongoDatabase.GetCollection<MoviesInfomation>("StorageMovies");
         public IMongoCollection<Client> User => mongoDatabase.GetCollection<Client>("User");
         public IMongoCollection<Client> Admin => mongoDatabase.GetCollection<Client>("Admin");
-        public IMongoCollection<MoviesInfomation> YeuThich => mongoDatabase.GetCollection<MoviesInfomation>("YeuThich");
 
 
 
