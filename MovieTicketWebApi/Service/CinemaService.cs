@@ -318,9 +318,10 @@ namespace MovieTicketWebApi.Service
         public async Task DeleteTime(string movieId, string movieTheater,string time)
         {
             var filter = Builders<Cinema>.Filter.Eq(c => c.name, movieTheater);
-            var update = Builders<Cinema>.Update.PullFilter(c => c.rooms[-1].showtimes,
+            var update = Builders<Cinema>.Update.PullFilter
+                (c => c.rooms.SelectMany(a=>a.showtimes),
              s=>s.movie.title==movieId && s.times.Contains(time));
-            var data=await mongoCollection.UpdateOneAsync(filter,update);
+            var data=await mongoCollection.UpdateManyAsync(filter,update);
 
         }
     }
