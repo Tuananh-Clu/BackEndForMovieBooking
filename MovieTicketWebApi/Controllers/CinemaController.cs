@@ -133,9 +133,9 @@ namespace MovieTicketWebApi.Controllers
             return Ok(data);
         }
         [HttpDelete("DeleteShowTime")]
-        public async Task<IActionResult> DeleteShowTime([FromQuery] string movieId, [FromQuery] string roomId, [FromQuery] string time)
+        public async Task<IActionResult> DeleteShowTime([FromQuery] string movieId, [FromQuery] string movietheater, [FromQuery] string time)
         {
-            await cinemaService.DeleteTime(movieId, roomId, time);
+            await cinemaService.DeleteTime(movieId, movietheater, time);
             return Ok(new { message = "Showtime deleted successfully" });
         }
     }
