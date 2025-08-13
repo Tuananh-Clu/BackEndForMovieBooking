@@ -20,11 +20,14 @@ namespace MovieTicketWebApi.Controllers.User
     {
         public readonly IMongoCollection<Client> mongoCollection;
         public readonly IMongoCollection<Client> collection;
+        public readonly IMongoCollection<MoviesInfomation> moviesCollection;
+
         public ClientController(MongoDbContext dbContext)
         {
 
             mongoCollection = dbContext.User;
             collection = dbContext.Admin;
+            moviesCollection = dbContext.YeuThich;
 
 
         }
@@ -128,7 +131,27 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(datauser);
         }
-       
+        [Authorize]
+        [HttpGet("GetFavoriteMovies")]
+        public async Task<IActionResult> GetFavoriteMovies(MoviesInfomation movieApiResponse, [FromHeader(Name="Authorization")] string token)
+        {
+            var jwt= token.Replace("Bearer ", "");
+            var userid=new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var data=await mongoCollection.Find(x=>x.Id==userid).FirstOrDefaultAsync()
+                ?? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync();
+            var result=Builders<Client>.Update.Push("YeuThich", movieApiResponse);
+
+            var updateResult = await mongoCollection.UpdateOneAsync(
+                x => x.Id == userid,
+                result
+            );
+            if (data == null) return NotFound("Không tìm thấy người dùng");
+            return Ok(updateResult);
+        }
+
     }
 
 }
