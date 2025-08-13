@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
 
 namespace MovieTicketWebApi.Model.User
@@ -12,5 +13,6 @@ namespace MovieTicketWebApi.Model.User
         public string Avatar { get; set; }
         public string role { get; set; }
         public List<List<TicketInformation>> tickets { get; set; } = new();
+        public List<Movie> YeuThich { get; set; } = new List<Movie>();
     }
 }

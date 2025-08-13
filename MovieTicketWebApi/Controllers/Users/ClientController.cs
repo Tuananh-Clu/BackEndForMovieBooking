@@ -141,7 +141,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync()
                 ?? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync();
-            var result = Builders<Client>.Update.Push("Yeu Thich", movieApiResponse);
+            var result = Builders<Client>.Update.Push("YeuThich", movieApiResponse);
 
             var updateResult = await mongoCollection.UpdateOneAsync(
                 x => x.Id == userid,
