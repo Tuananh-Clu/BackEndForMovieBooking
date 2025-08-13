@@ -132,7 +132,7 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(datauser);
         }
         [Authorize]
-        [HttpGet("GetFavoriteMovies")]
+        [HttpPost("GetFavoriteMovies")]
         public async Task<IActionResult> GetFavoriteMovies(MoviesInfomation movieApiResponse, [FromHeader(Name="Authorization")] string token)
         {
             var jwt= token.Replace("Bearer ", "");
