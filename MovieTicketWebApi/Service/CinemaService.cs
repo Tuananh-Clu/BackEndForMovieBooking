@@ -283,23 +283,28 @@ namespace MovieTicketWebApi.Service
 
             return data;
         }
-        public async Task<List<ShowTimeForMovieBooking>> GetDataShowTimeWithID(string id)
+        public async Task<List<ShowTimeForMovieBooking>> GetDataShowTimeWithID(string movieId)
         {
+            var filter = Builders<Cinema>.Filter.ElemMatch(c => c.rooms,
+                Builders<Rooms>.Filter.ElemMatch(r => r.showtimes,
+                    Builders<Showtime>.Filter.Eq(s => s.movie.id, movieId) 
+                ));
+
             var projection = Builders<Cinema>.Projection.Expression(c => new ShowTimeForMovieBooking
             {
                 name = c.name,
                 times = c.rooms
                     .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.title == id)
-                        .SelectMany(s => s.times)) 
+                        .Where(s => s.movie.id == movieId)
+                        .SelectMany(s => s.times))
                     .ToList()
             });
 
-            var data = await mongoCollection.Find(_ => true) 
-                                          .Project(projection)
-                                          .ToListAsync();
+            var data = await mongoCollection.Find(filter)
+                                           .Project(projection)
+                                           .ToListAsync();
 
-            return data;
+            return data.Where(x => x.times.Any()).ToList();
         }
 
     }
