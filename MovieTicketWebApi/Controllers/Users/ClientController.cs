@@ -133,7 +133,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies(MoviesInfomation movieApiResponse, [FromHeader(Name="Authorization")] string token)
+        public async Task<IActionResult> GetFavoriteMovies(List<MoviesInfomation> movieApiResponse, [FromHeader(Name="Authorization")] string token)
         {
             var jwt= token.Replace("Bearer ", "");
             var userid=new JwtSecurityTokenHandler()
