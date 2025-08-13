@@ -331,8 +331,8 @@ namespace MovieTicketWebApi.Service
             }
             if(isUpdated)
             {
-                var update = Builders<Cinema>.Update.Set(c => c.rooms, filter.rooms);
-                await mongoCollection.UpdateOneAsync(c => c.name == movieTheater, update);
+                var update = Builders<Cinema>.Filter.Eq(c => c.id, filter.id);
+                await mongoCollection.ReplaceOneAsync(update, filter);
             }
 
         }
