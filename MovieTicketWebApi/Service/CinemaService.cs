@@ -295,7 +295,7 @@ namespace MovieTicketWebApi.Service
                 name = c.name,
                 times = c.rooms
                     .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.id == movieId)
+                        .Where(s => s.movie.title == movieId)
                         .SelectMany(s => s.times))
                     .ToList()
             });
