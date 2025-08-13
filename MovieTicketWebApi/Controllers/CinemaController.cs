@@ -126,6 +126,12 @@ namespace MovieTicketWebApi.Controllers
             var data = await cinemaService.getDoanhThu();
             return Ok(data);
         }
+        [HttpGet("GetShowTimeById")]
+        public async Task<IActionResult> GetShowTimeById([FromQuery] string id)
+        {
+            var data = await cinemaService.GetDataShowTimeWithID(id);
+            return Ok(data);
+        }
     }
    
 
