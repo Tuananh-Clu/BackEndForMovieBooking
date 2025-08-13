@@ -45,7 +45,7 @@ namespace MovieTicketWebApi.Service
                 var filter = Builders<Cinema>.Filter.And(
                     Builders<Cinema>.Filter.Eq(a => a.address, ticket.Location),
                     Builders<Cinema>.Filter.ElemMatch(a => a.rooms, r => r.id == ticket.RoomId));
-                var update=await mongoCollection.Find(filter).FirstOrDefaultAsync();
+                var update = await mongoCollection.Find(filter).FirstOrDefaultAsync();
                 if (update != null)
                 {
                     var room = update.rooms.FirstOrDefault(r => r.id == ticket.RoomId);
@@ -69,7 +69,7 @@ namespace MovieTicketWebApi.Service
 
         public async Task<List<Movie>> GetMovieBooking()
         {
-            var cinemas = await mongoCollection.Find(_ => true).Project(s=>new { s.rooms }).ToListAsync();
+            var cinemas = await mongoCollection.Find(_ => true).Project(s => new { s.rooms }).ToListAsync();
 
             var allMovies = cinemas
                 .SelectMany(c => c.rooms)
@@ -83,16 +83,16 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<TheaterProp>> GetTheaterPropsAsync()
         {
-            var theater=await mongoCollection.Find(_=>true).Project(s=>new TheaterProp
+            var theater = await mongoCollection.Find(_ => true).Project(s => new TheaterProp
             {
                 Id = s.id,
                 Name = s.name,
                 Address = s.address,
                 Image = s.image,
-                City=s.city
+                City = s.city
 
             }).ToListAsync();
-            var theaterProps=theater.Select(theater => new TheaterProp
+            var theaterProps = theater.Select(theater => new TheaterProp
             {
                 Id = theater.Id,
                 Name = theater.Name,
@@ -171,10 +171,10 @@ namespace MovieTicketWebApi.Service
             return daySelectList;
         }
 
-        public async Task<List<TheaterInFo>> getInfoTheater(string location,string room,string movieTitle)
+        public async Task<List<TheaterInFo>> getInfoTheater(string location, string room, string movieTitle)
         {
             var filter = Builders<Cinema>.Filter.And(
-                   Builders<Cinema>.Filter.Eq(c => c.address,location ),
+                   Builders<Cinema>.Filter.Eq(c => c.address, location),
                    Builders<Cinema>.Filter.ElemMatch(c => c.rooms, r => r.id == room)
                );
             var cinemas = await mongoCollection.Find(filter).ToListAsync();
@@ -184,7 +184,7 @@ namespace MovieTicketWebApi.Service
                     Theateraddress = c.address,
                     Theatername = c.name,
                     Poster = d.movie.poster,
-                    City=c.city
+                    City = c.city
 
                 }))).Distinct().ToList();
             return result;
@@ -221,8 +221,8 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<FullInfoTheater>> getTheaterBtId(string id)
         {
-            var filter=Builders<Cinema>.Filter.Eq(c => c.id, id);
-            var result=await mongoCollection.Find(filter).Project(c => new FullInfoTheater
+            var filter = Builders<Cinema>.Filter.Eq(c => c.id, id);
+            var result = await mongoCollection.Find(filter).Project(c => new FullInfoTheater
             {
                 Id = c.id,
                 Name = c.name,
@@ -241,7 +241,7 @@ namespace MovieTicketWebApi.Service
                 .Include(c => c.name)
                 .Include("rooms.id").
                 Exclude("_id");
-            var data=await mongoCollection
+            var data = await mongoCollection
                 .Find(_ => true)
                 .Project<BookingData>(filter)
                 .ToListAsync();
@@ -255,7 +255,7 @@ namespace MovieTicketWebApi.Service
             {
                 name = c.name,
 
-                     quantity = c.rooms
+                quantity = c.rooms
                     .SelectMany(r => r.showtimes)
                     .SelectMany(s => s.seats)
                     .Count(seat => seat.isOrdered == "true"),
@@ -292,7 +292,7 @@ namespace MovieTicketWebApi.Service
                         Builders<Showtime>.Filter.Eq(s => s.movie.title, movieTitle)
                     ));
 
-   
+
                 var cinemas = await mongoCollection.Find(filter).ToListAsync();
 
                 var data = cinemas.Select(c => new ShowTimeForMovieBooking
@@ -304,7 +304,7 @@ namespace MovieTicketWebApi.Service
                         .SelectMany(s => s.times ?? new List<string>())
                         .ToList()
                 })
-                .Where(x => x.Times.Any()) 
+                .Where(x => x.Times.Any())
                 .ToList();
 
                 return data;
@@ -312,10 +312,16 @@ namespace MovieTicketWebApi.Service
             catch (Exception ex)
             {
                 Console.WriteLine("Error in GetDataShowTimeWithID: " + ex);
-                throw; 
+                throw;
             }
         }
+        public async Task DeleteTime(string movieId, string movieTheater,string time)
+        {
+            var filter = Builders<Cinema>.Filter.Eq(c => c.name, movieTheater);
+            var update = Builders<Cinema>.Update.PullFilter(c => c.rooms[-1].showtimes,
+             s=>s.movie.title==movieId && s.times.Contains(time));
+            var data=await mongoCollection.UpdateOneAsync(filter,update);
 
-
+        }
     }
 }
