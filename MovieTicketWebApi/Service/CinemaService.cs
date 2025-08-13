@@ -317,11 +317,23 @@ namespace MovieTicketWebApi.Service
         }
         public async Task DeleteTime(string movieId, string movieTheater,string time)
         {
-            var filter = Builders<Cinema>.Filter.Eq(c => c.name, movieTheater);
-            var update = Builders<Cinema>.Update.PullFilter
-                (c => c.rooms.SelectMany(a=>a.showtimes),
-             s=>s.movie.title==movieId && s.times.Contains(time));
-            var data=await mongoCollection.UpdateManyAsync(filter,update);
+            var filter = await mongoCollection.Find(c=>c.name==movieTheater).FirstOrDefaultAsync();
+            if (filter == null) return;
+            bool isUpdated = false;
+            foreach(var room in filter.rooms)
+            {
+                var showtime = room.showtimes.FirstOrDefault(s => s.movie.title == movieId && s.times.Contains(time));
+                if (showtime != null)
+                {
+                    showtime.times.Remove(time);
+                    isUpdated = true;
+                }
+            }
+            if(isUpdated)
+            {
+                var update = Builders<Cinema>.Update.Set(c => c.rooms, filter.rooms);
+                await mongoCollection.UpdateOneAsync(c => c.name == movieTheater, update);
+            }
 
         }
     }
