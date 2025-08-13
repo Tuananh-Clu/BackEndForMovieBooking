@@ -2,7 +2,7 @@
 {
     public class ShowTimeForMovieBooking
     {
-        public string name { get; set; }
-        public List<string> times { get; set; }
+        public string Name { get; set; }
+        public List<string> Times { get; set; }
     }
 }

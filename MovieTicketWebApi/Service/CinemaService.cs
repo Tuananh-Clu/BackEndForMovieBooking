@@ -283,19 +283,19 @@ namespace MovieTicketWebApi.Service
 
             return data;
         }
-        public async Task<List<ShowTimeForMovieBooking>> GetDataShowTimeWithID(string movieId)
+        public async Task<List<ShowTimeForMovieBooking>> GetDataShowTimeWithID(string movieTitle)
         {
             var filter = Builders<Cinema>.Filter.ElemMatch(c => c.rooms,
                 Builders<Rooms>.Filter.ElemMatch(r => r.showtimes,
-                    Builders<Showtime>.Filter.Eq(s => s.movie.title, movieId) 
+                    Builders<Showtime>.Filter.Eq(s => s.movie.title, movieTitle) 
                 ));
 
             var projection = Builders<Cinema>.Projection.Expression(c => new ShowTimeForMovieBooking
             {
-                name = c.name,
-                times = c.rooms
+                Name = c.name,
+                Times = c.rooms
                     .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.title == movieId)
+                        .Where(s => s.movie.title == movieTitle)
                         .SelectMany(s => s.times))
                     .ToList()
             });
@@ -304,7 +304,7 @@ namespace MovieTicketWebApi.Service
                                            .Project(projection)
                                            .ToListAsync();
 
-            return data.Where(x => x.times.Any()).ToList();
+            return data.Where(x => x.Times.Any()).ToList();
         }
 
     }
