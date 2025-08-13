@@ -285,27 +285,37 @@ namespace MovieTicketWebApi.Service
         }
         public async Task<List<ShowTimeForMovieBooking>> GetDataShowTimeWithID(string movieTitle)
         {
-            var filter = Builders<Cinema>.Filter.ElemMatch(c => c.rooms,
-                Builders<Rooms>.Filter.ElemMatch(r => r.showtimes,
-                    Builders<Showtime>.Filter.Eq(s => s.movie.title, movieTitle) 
-                ));
-
-            var projection = Builders<Cinema>.Projection.Expression(c => new ShowTimeForMovieBooking
+            try
             {
-                Name = c.name,
-                Times = c.rooms
-                    .SelectMany(r => r.showtimes
-                        .Where(s => s.movie.title == movieTitle)
-                        .SelectMany(s => s.times))
-                    .ToList()
-            });
+                var filter = Builders<Cinema>.Filter.ElemMatch(c => c.rooms,
+                    Builders<Rooms>.Filter.ElemMatch(r => r.showtimes,
+                        Builders<Showtime>.Filter.Eq(s => s.movie.title, movieTitle)
+                    ));
 
-            var data = await mongoCollection.Find(filter)
-                                           .Project(projection)
-                                           .ToListAsync();
+   
+                var cinemas = await mongoCollection.Find(filter).ToListAsync();
 
-            return data.Where(x => x.Times.Any()).ToList();
+                var data = cinemas.Select(c => new ShowTimeForMovieBooking
+                {
+                    Name = c.name,
+                    Times = c.rooms
+                        .SelectMany(r => r.showtimes ?? new List<Showtime>())
+                        .Where(s => s.movie?.title == movieTitle)
+                        .SelectMany(s => s.times ?? new List<string>())
+                        .ToList()
+                })
+                .Where(x => x.Times.Any()) 
+                .ToList();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in GetDataShowTimeWithID: " + ex);
+                throw; 
+            }
         }
+
 
     }
 }
