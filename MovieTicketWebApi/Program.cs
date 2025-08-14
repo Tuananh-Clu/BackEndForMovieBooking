@@ -72,12 +72,10 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MovieTicket API v1");
 });
-
-app.UseRouting();
 app.UseCors("AllowFrontend");
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
