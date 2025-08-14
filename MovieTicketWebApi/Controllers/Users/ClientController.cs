@@ -14,7 +14,7 @@ using System.Net.Sockets;
 
 namespace MovieTicketWebApi.Controllers.User
 {
-    [Authorize]
+   
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
@@ -31,6 +31,7 @@ namespace MovieTicketWebApi.Controllers.User
 
 
         }
+        [AllowAnonymous]
         [HttpPost("AddUser")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
@@ -110,12 +111,14 @@ namespace MovieTicketWebApi.Controllers.User
 
             });
         }
+        [AllowAnonymous]
         [HttpGet("GetAllUser")]
         public async Task<IActionResult> GetUserData()
         {
             var data=await mongoCollection.Find(_=>true).ToListAsync();
             return Ok(data);
         }
+        [AllowAnonymous]
         [HttpGet("GetQuantityTicket")]
         public async Task<IActionResult> GetQuantityTickets()
         {
@@ -132,6 +135,7 @@ namespace MovieTicketWebApi.Controllers.User
                 return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
             }
         }
+        [AllowAnonymous]
         [HttpGet("GetDoanhthuTicket")]
         public async Task<IActionResult> DoanhThu()
         {
@@ -150,6 +154,7 @@ namespace MovieTicketWebApi.Controllers.User
             }
             
         }
+        [Authorize]
         [HttpPost("GetFavoriteMovies")]
         public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
         {
