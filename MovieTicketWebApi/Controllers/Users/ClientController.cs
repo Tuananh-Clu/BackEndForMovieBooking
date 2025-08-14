@@ -106,7 +106,8 @@ namespace MovieTicketWebApi.Controllers.User
                 data.Email,
                 data.role,
                 data.tickets,
-               
+                data.YeuThich,
+
             });
         }
         [HttpGet("GetAllUser")]
@@ -118,17 +119,36 @@ namespace MovieTicketWebApi.Controllers.User
         [HttpGet("GetQuantityTicket")]
         public async Task<IActionResult> GetQuantityTickets()
         {
-            var data=await mongoCollection.Find(_=>true).ToListAsync();
-            var userLength=data.SelectMany(user=>user.tickets).SelectMany(ticket=>ticket).Count();
-            return Ok(userLength-1);
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
+                return Ok(userLength - 1);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
         }
         [HttpGet("GetDoanhthuTicket")]
         public async Task<IActionResult> DoanhThu()
-        { 
-            var data = await mongoCollection.Find(_=>true).ToListAsync();
-            var datauser = data.Sum(user =>user.tickets.Sum(h=>h.Sum(ticket=>ticket.Price)));
+        {
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
+                return Ok(datauser);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
 
-            return Ok(datauser);
+            }
+            
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
