@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
+using MovieTicketWebApi.Model.User;
 
 namespace MovieTicketWebApi.Service
 {
@@ -339,5 +341,6 @@ namespace MovieTicketWebApi.Service
             }
 
         }
+       
     }
 }

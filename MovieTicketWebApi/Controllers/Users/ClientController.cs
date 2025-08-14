@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
@@ -107,7 +108,6 @@ namespace MovieTicketWebApi.Controllers.User
                 data.Email,
                 data.role,
                 data.tickets,
-                data.YeuThich,
 
             });
         }
@@ -187,6 +187,17 @@ namespace MovieTicketWebApi.Controllers.User
             }
 
         }
+        [HttpGet("GetFavouriteMovieByUser")]
+        public async Task<IActionResult> GetFavouriteMoviesByUser()
+        {
+            var users = await mongoCollection.Find(_ => true)
+                                        .Project(u => new { u.Id, u.YeuThich })
+                                        .ToListAsync();
+
+            return Ok(users);
+        }
+
+
 
     }
 
