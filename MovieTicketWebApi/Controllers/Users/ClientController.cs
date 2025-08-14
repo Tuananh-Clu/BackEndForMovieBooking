@@ -14,6 +14,7 @@ using System.Net.Sockets;
 
 namespace MovieTicketWebApi.Controllers.User
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
@@ -30,7 +31,6 @@ namespace MovieTicketWebApi.Controllers.User
 
 
         }
-        [Authorize]
         [HttpPost("AddUser")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
@@ -150,7 +150,6 @@ namespace MovieTicketWebApi.Controllers.User
             }
             
         }
-        [Authorize]
         [HttpPost("GetFavoriteMovies")]
         public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
         {
