@@ -32,7 +32,6 @@ namespace MovieTicketWebApi.Controllers.User
 
 
         }
-        [AllowAnonymous]
         [HttpPost("AddUser")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
@@ -111,49 +110,6 @@ namespace MovieTicketWebApi.Controllers.User
 
             });
         }
-        [AllowAnonymous]
-        [HttpGet("GetAllUser")]
-        public async Task<IActionResult> GetUserData()
-        {
-            var data=await mongoCollection.Find(_=>true).ToListAsync();
-            return Ok(data);
-        }
-        [AllowAnonymous]
-        [HttpGet("GetQuantityTicket")]
-        public async Task<IActionResult> GetQuantityTickets()
-        {
-            try
-            {
-                var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
-                return Ok(userLength - 1);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-            }
-        }
-        [AllowAnonymous]
-        [HttpGet("GetDoanhthuTicket")]
-        public async Task<IActionResult> DoanhThu()
-        {
-            try
-            {
-                var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
-                return Ok(datauser);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-
-            }
-            
-        }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
         public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
@@ -187,6 +143,50 @@ namespace MovieTicketWebApi.Controllers.User
             }
 
         }
+
+        [HttpGet("GetAllUser")]
+        public async Task<IActionResult> GetUserData()
+        {
+            var data=await mongoCollection.Find(_=>true).ToListAsync();
+            return Ok(data);
+        }
+ 
+        [HttpGet("GetQuantityTicket")]
+        public async Task<IActionResult> GetQuantityTickets()
+        {
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
+                return Ok(userLength - 1);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+        }
+
+        [HttpGet("GetDoanhthuTicket")]
+        public async Task<IActionResult> DoanhThu()
+        {
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
+                return Ok(datauser);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+
+            }
+            
+        }
+       
         [HttpGet("GetFavouriteMovieByUser")]
         public async Task<IActionResult> GetFavouriteMoviesByUser()
         {
