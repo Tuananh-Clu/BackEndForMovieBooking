@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://ap-cinema.vercel.app")
+        policy.WithOrigins("https://ap-cinema.vercel.app", "http://localhost:5173/")
               .AllowAnyHeader()
               .AllowAnyMethod().AllowCredentials();
     });
