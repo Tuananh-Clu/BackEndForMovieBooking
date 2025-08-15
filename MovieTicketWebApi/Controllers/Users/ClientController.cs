@@ -196,9 +196,9 @@ namespace MovieTicketWebApi.Controllers.User
                 .Claims
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var fetch=Builders<Client>.Filter.Eq(c => c.Id, jwt);
-            var user = await mongoCollection.Find(fetch).Project(c=>new{
+            var user = await mongoCollection.Find(fetch).Project(c=>
                 c.YeuThich
-            }).ToListAsync();
+            ).ToListAsync();
 
             return Ok(user);
         }
