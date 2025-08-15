@@ -188,19 +188,25 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("GetFavouriteMovieByUser")]
-        public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name ="Authorization")] string token)
+        public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name = "Authorization")] string token)
         {
-            var userid=token.Replace("Bearer ", "");
-            var jwt=new JwtSecurityTokenHandler()
-                .ReadJwtToken(userid)
+            var jwtToken = token.Replace("Bearer ", "");
+            var userId = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwtToken)
                 .Claims
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
-            var fetch=Builders<Client>.Filter.Eq(c => c.Id, jwt);
-            var user = await mongoCollection.Find(fetch).Project(c=>
-                c.YeuThich
-            ).ToListAsync();
 
-            return Ok(user);
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var favoriteMovies = user.YeuThich?.Select(h => new Movie
+            {
+                id = h.id,
+                title = h.title,
+                poster = h.poster,
+                duration = h.duration
+            }).ToList();
+
+            return Ok(favoriteMovies);
         }
 
 
