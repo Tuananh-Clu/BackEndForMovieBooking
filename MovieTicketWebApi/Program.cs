@@ -1,10 +1,11 @@
-﻿using MongoDB.Driver;
+﻿using Amazon.Auth.AccessControlPolicy;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using MovieTicketWebApi.Data;
+using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
-using MovieTicketWebApi.Model;
 
 AppContext.SetSwitch("System.Net.Security.SslStream.UseLegacyTls", false);
 
@@ -26,25 +27,24 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// ✅ Chỉ cần 1 AddCors duy nhất, không lồng
 builder.Services.AddCors(options =>
 {
-    builder.Services.AddCors(options =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        options.AddPolicy("AllowFrontend", policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:5173",         // FE local (Vite)
-                "http://localhost:3000",
-                "https://ap-cinema.vercel.app"   // FE đã deploy (bỏ dấu /)
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-        });
+        policy.WithOrigins(
+            "https://ap-cinema.vercel.app",
+            "http://localhost:5173",        
+            "http://localhost:3000"        
+        )
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
-
 });
 
 builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
@@ -80,9 +80,14 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MovieTicket API v1");
 });
+
+
+app.UseCors("AllowFrontend");
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();
