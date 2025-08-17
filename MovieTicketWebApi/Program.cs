@@ -34,12 +34,11 @@ builder.Services.AddCors(options =>
         {
             policy.WithOrigins(
                 "http://localhost:5173",         // FE local (Vite)
-                "http://localhost:3000",       
+                "http://localhost:3000",
                 "https://ap-cinema.vercel.app"   // FE đã deploy (bỏ dấu /)
             )
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
         });
     });
 
