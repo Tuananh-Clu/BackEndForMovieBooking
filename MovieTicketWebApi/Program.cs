@@ -28,12 +28,21 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    builder.Services.AddCors(options =>
     {
-        policy.WithOrigins("https://ap-cinema.vercel.app/", "http://localhost:5173/")
-              .AllowAnyHeader()
-              .AllowAnyMethod().AllowCredentials();
+        options.AddPolicy("AllowFrontend", policy =>
+        {
+            policy.WithOrigins(
+                "http://localhost:5173",         // FE local (Vite)
+                "http://localhost:3000",       
+                "https://ap-cinema.vercel.app"   // FE đã deploy (bỏ dấu /)
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+        });
     });
+
 });
 
 builder.Configuration.AddEnvironmentVariables();
