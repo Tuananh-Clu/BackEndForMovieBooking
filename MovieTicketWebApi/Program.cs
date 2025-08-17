@@ -30,7 +30,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("https://ap-cinema.vercel.app/", "http://localhost:5173/")
               .AllowAnyHeader()
               .AllowAnyMethod().AllowCredentials();
     });
@@ -72,7 +72,7 @@ app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MovieTicket API v1");
 });
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontEnd");
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
