@@ -208,6 +208,7 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(favoriteMovies);
         }
+        [Authorize]
         [HttpDelete("DeleteUserFavorite")]
         public async Task Delete([FromHeader(Name ="Authorization")]string token, [FromQuery]string movieTitle)
         {
