@@ -263,7 +263,7 @@ namespace MovieTicketWebApi.Controllers.User
             var userponit=data.tickets.Sum(h=>h.Sum(ticket => ticket.Quantity)*POINT_PER_TICKET);
             var lol=Builders<Client>.Update.Set("Point", userponit);
             var update = await mongoCollection.UpdateOneAsync(filter, lol);
-            return Ok(update);
+            return Ok(userponit);
         }
 
     }
