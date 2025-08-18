@@ -245,7 +245,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data= await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var movie=data.tickets.SelectMany(h=>h).Select(data=>data.MovieTitle.Count()).Distinct().ToList();
+            var movie=data.tickets.SelectMany(h=>h).Select(data=>data.MovieTitle).Distinct().Count();
             return Ok(movie);
         }
         [Authorize]
@@ -259,8 +259,8 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var point = 20;
-            var userponit=data.tickets.Sum(h=>h.Sum(ticket => ticket.Quantity)*point);
+            const int POINT_PER_TICKET = 20;
+            var userponit=data.tickets.Sum(h=>h.Sum(ticket => ticket.Quantity)*POINT_PER_TICKET);
             var lol=Builders<Client>.Update.Set("Point", userponit);
             var update = await mongoCollection.UpdateOneAsync(filter, lol);
             return Ok(update);
