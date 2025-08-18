@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
@@ -231,7 +232,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var quantity=user.tickets.Select(h=>h).SelectMany(ticket => ticket).Distinct().Count();
+            var quantity=user.tickets.Select(h=>h).SelectMany(ticket => ticket).Where(a=>a.Quantity>0).Distinct().Count();
             return Ok(quantity);
         }
         [Authorize]
