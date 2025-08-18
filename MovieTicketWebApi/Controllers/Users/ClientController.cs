@@ -231,7 +231,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var quantity=user.tickets.Sum(h => h.Sum(ticket => ticket.Quantity));
+            var quantity=user.tickets.Select(h => h.Sum(ticket => ticket.Quantity));
             return Ok(quantity);
         }
         [Authorize]
