@@ -216,17 +216,8 @@ namespace MovieTicketWebApi.Controllers.User
             var userid=new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.FirstOrDefault(c=>c.Type=="sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            bool isCheck = false;
-            foreach (var movie in user.YeuThich)
-            {
-                if(movie.title==movieTitle)
-                {
-                    user.YeuThich.Remove(movie);
-                    isCheck = true;
-                }
-            }
-            if (!isCheck) return;
-            var update=await mongoCollection.UpdateOneAsync(filter, Builders<Client>.Update.Set(c => c.YeuThich, user.YeuThich));
+            var updateFilter = Builders<Client>.Update.PullFilter(c => c.YeuThich, h => h.title == movieTitle);
+            var update=await mongoCollection.UpdateOneAsync(filter,updateFilter);
 
         }
 
