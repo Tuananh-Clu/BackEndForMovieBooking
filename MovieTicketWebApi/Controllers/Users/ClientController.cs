@@ -220,7 +220,51 @@ namespace MovieTicketWebApi.Controllers.User
             var update=await mongoCollection.UpdateOneAsync(filter,updateFilter);
 
         }
-
+        [Authorize]
+        [HttpGet("GetQuantityTIcketBuyByUserId")]
+        public async Task<IActionResult> getQuantity([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt=token.Replace("Bearer ", "");
+            var userid=new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var quantity=user.tickets.Sum(h => h.Sum(ticket => ticket.Quantity));
+            return Ok(quantity);
+        }
+        [Authorize]
+        [HttpGet("GetMovieByUserId")]
+        public async Task<IActionResult> GetMovie([FromHeader(Name ="Authorization")] string token)
+        {
+            var jwt=token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data= await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var movie=data.tickets.SelectMany(h=>h).Select(data=>data.MovieTitle.Count()).Distinct().ToList();
+            return Ok(movie);
+        }
+        [Authorize]
+        [HttpGet("GetPointId")]
+        public async Task<IActionResult> GetPointId([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var point = 20;
+            var userponit=data.tickets.Sum(h=>h.Sum(ticket => ticket.Quantity)*point);
+            var lol=Builders<Client>.Update.Set("Point", userponit);
+            var update = await mongoCollection.UpdateOneAsync(filter, lol);
+            return Ok(update);
+        }
 
     }
 
