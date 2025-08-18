@@ -204,7 +204,7 @@ namespace MovieTicketWebApi.Controllers.User
                 title = h.title,
                 poster = h.poster,
                 duration = h.duration
-            }).ToList();
+            }).Distinct().ToList();
 
             return Ok(favoriteMovies);
         }
