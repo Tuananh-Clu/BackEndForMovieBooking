@@ -1,5 +1,6 @@
 ﻿using Amazon.Auth.AccessControlPolicy;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
@@ -62,12 +63,25 @@ builder.Services.AddSingleton<CinemaService>();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = builder.Configuration["Jwt:Issuer"];
+        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
+
+            ValidateAudience = true,
+            ValidAudiences = new[]
+            {
+                "http://localhost:5173",
+                "https://ap-cinema.vercel.app"
+            },
+
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true
         };
     });
+
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
