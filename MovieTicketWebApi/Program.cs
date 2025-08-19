@@ -1,4 +1,5 @@
 ﻿using Amazon.Auth.AccessControlPolicy;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
@@ -60,19 +61,13 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        options.Authority = builder.Configuration["Jwt:Issuer"];
-
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-        {
-           ValidateAudience = false,
-
-        };
+        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+        options.TokenValidationParameters.ValidateAudience = false; 
+        options.TokenValidationParameters.ValidateIssuer = false;   
     });
-
-
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
