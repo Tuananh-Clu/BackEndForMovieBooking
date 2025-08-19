@@ -1,10 +1,10 @@
-﻿
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
@@ -222,7 +222,51 @@ namespace MovieTicketWebApi.Controllers.User
             var update = await mongoCollection.UpdateOneAsync(filter, updateFilter);
 
         }
-
+        [Authorize]
+        [HttpGet("GetQuantityTIcketBuyByUserId")]
+        public async Task<IActionResult> getQuantity([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var quantity = user.tickets.Select(h => h).SelectMany(ticket => ticket).Where(a => a.Quantity > 0).Distinct().Count();
+            return Ok(quantity);
+        }
+        [Authorize]
+        [HttpGet("GetMovieByUserId")]
+        public async Task<IActionResult> GetMovie([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var movie = data.tickets.SelectMany(h => h).Select(data => data.MovieTitle).Distinct().Count();
+            return Ok(movie);
+        }
+        [Authorize]
+        [HttpGet("GetPointId")]
+        public async Task<IActionResult> GetPointId([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            const int POINT_PER_TICKET = 20;
+            var userponit = data.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
+            var lol = Builders<Client>.Update.Set("Point", userponit);
+            var update = await mongoCollection.UpdateOneAsync(filter, lol);
+            return Ok(userponit);
+        }
 
     }
 
