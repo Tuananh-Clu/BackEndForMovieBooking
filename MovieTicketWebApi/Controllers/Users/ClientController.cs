@@ -168,7 +168,7 @@ namespace MovieTicketWebApi.Controllers.User
                     .FirstOrDefault(c => c.Type == "sub")?.Value;
                 var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
                 var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
-                var result = Builders<Client>.Update.Push("YeuThich", movieApiResponse);
+                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
 
                 var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
                     x => x.Id == userid,
