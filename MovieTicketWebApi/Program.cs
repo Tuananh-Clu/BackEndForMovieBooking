@@ -63,22 +63,12 @@ builder.Services.AddSingleton<CinemaService>();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
-        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+        options.Authority = builder.Configuration["Jwt:Issuer"];
 
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
+           ValidateAudience = false,
 
-            ValidateAudience = true,
-            ValidAudiences = new[]
-            {
-                "http://localhost:5173",
-                "https://ap-cinema.vercel.app"
-            },
-
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
         };
     });
 
