@@ -48,102 +48,6 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(new {sucess=true});
         }
 
-        [Authorize]
-        [HttpPost("Up")]
-        public async Task<IActionResult> AddBooking(
-     [FromBody] List<List<TicketInformation>> ticketInformation,
-     [FromHeader(Name = "Authorization")] string token)
-        {
-            var jwt = token.Replace("Bearer ", "");
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(jwt);
-            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return BadRequest("Không tìm thấy userId trong token");
-
-            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
-            
-            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                user = await collection.Find(filter).FirstOrDefaultAsync();
-                foreach (var group in ticketInformation)
-                {
-                    var update = Builders<Client>.Update.Push("tickets", group);
-                    var result = await collection.UpdateOneAsync(filter, update);
-                }
-
-            }
-            else
-            {
-                foreach (var group in ticketInformation)
-                {
-                    var update = Builders<Client>.Update.Push("tickets", group);
-                    var result = await mongoCollection.UpdateOneAsync(filter, update);
-                }
-            }
-
-           
-
-            return Ok(new { success = true });
-        }
-        [Authorize]
-        [HttpGet("GetUser")]
-        public async Task<IActionResult> GetAll([FromHeader(Name = "Authorization")] string token)
-        {
-            var jwt = token.Replace("Bearer ", "");
-            var userId = new JwtSecurityTokenHandler()
-                            .ReadJwtToken(jwt)
-                            .Claims
-                            .FirstOrDefault(c => c.Type == "sub")?.Value;
-
-            var data = await mongoCollection.Find(x => x.Id == userId).FirstOrDefaultAsync()
-                    ?? await collection.Find(x => x.Id == userId).FirstOrDefaultAsync();
-
-            if (data == null) return NotFound("Không tìm thấy người dùng");
-
-            return Ok(new
-            {
-                data.Name,
-                data.Email,
-                data.role,
-                data.tickets,
-
-            });
-        }
-        [Authorize]
-        [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
-        {
-            try
-            {
-                var jwt = token.Replace("Bearer ", "");
-                var userid = new JwtSecurityTokenHandler()
-                    .ReadJwtToken(jwt)
-                    .Claims
-                    .FirstOrDefault(c => c.Type == "sub")?.Value;
-                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
-                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
-                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
-
-                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                ) : await collection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                );
-                if (data == null) return NotFound("Không tìm thấy người dùng");
-                return Ok(updateResult);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-            }
-
-        }
 
         [HttpGet("GetAllUser")]
         public async Task<IActionResult> GetUserData()
@@ -187,6 +91,103 @@ namespace MovieTicketWebApi.Controllers.User
             }
             
         }
+        [Authorize]
+        [HttpPost("Up")]
+        public async Task<IActionResult> AddBooking(
+ [FromBody] List<List<TicketInformation>> ticketInformation,
+ [FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(jwt);
+            var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return BadRequest("Không tìm thấy userId trong token");
+
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
+
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            if (user == null)
+            {
+                user = await collection.Find(filter).FirstOrDefaultAsync();
+                foreach (var group in ticketInformation)
+                {
+                    var update = Builders<Client>.Update.Push("tickets", group);
+                    var result = await collection.UpdateOneAsync(filter, update);
+                }
+
+            }
+            else
+            {
+                foreach (var group in ticketInformation)
+                {
+                    var update = Builders<Client>.Update.Push("tickets", group);
+                    var result = await mongoCollection.UpdateOneAsync(filter, update);
+                }
+            }
+
+
+
+            return Ok(new { success = true });
+        }
+        [Authorize]
+        [HttpGet("GetUser")]
+        public async Task<IActionResult> GetAll([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userId = new JwtSecurityTokenHandler()
+                            .ReadJwtToken(jwt)
+                            .Claims
+                            .FirstOrDefault(c => c.Type == "sub")?.Value;
+
+            var data = await mongoCollection.Find(x => x.Id == userId).FirstOrDefaultAsync()
+                    ?? await collection.Find(x => x.Id == userId).FirstOrDefaultAsync();
+
+            if (data == null) return NotFound("Không tìm thấy người dùng");
+
+            return Ok(new
+            {
+                data.Name,
+                data.Email,
+                data.role,
+                data.tickets,
+
+            });
+        }
+        [Authorize]
+        [HttpPost("GetFavoriteMovies")]
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name = "Authorization")] string token, List<Movie> movieApiResponse)
+        {
+            try
+            {
+                var jwt = token.Replace("Bearer ", "");
+                var userid = new JwtSecurityTokenHandler()
+                    .ReadJwtToken(jwt)
+                    .Claims
+                    .FirstOrDefault(c => c.Type == "sub")?.Value;
+                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
+                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
+                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
+
+                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                ) : await collection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                );
+                if (data == null) return NotFound("Không tìm thấy người dùng");
+                return Ok(updateResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+
+        }
+
         [Authorize]
         [HttpGet("GetFavouriteMovieByUser")]
         public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name = "Authorization")] string token)
