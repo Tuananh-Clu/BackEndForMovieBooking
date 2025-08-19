@@ -109,6 +109,7 @@ namespace MovieTicketWebApi.Controllers.User
                 data.Email,
                 data.role,
                 data.tickets,
+                data.Point,
 
             });
         }
