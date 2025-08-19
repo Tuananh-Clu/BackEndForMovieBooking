@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Linq;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
@@ -109,11 +108,42 @@ namespace MovieTicketWebApi.Controllers.User
                 data.Email,
                 data.role,
                 data.tickets,
-                data.Point,
 
             });
         }
+        [Authorize]
+        [HttpPost("GetFavoriteMovies")]
+        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
+        {
+            try
+            {
+                var jwt = token.Replace("Bearer ", "");
+                var userid = new JwtSecurityTokenHandler()
+                    .ReadJwtToken(jwt)
+                    .Claims
+                    .FirstOrDefault(c => c.Type == "sub")?.Value;
+                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
+                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
+                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
 
+                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                ) : await collection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                );
+                if (data == null) return NotFound("Không tìm thấy người dùng");
+                return Ok(updateResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+
+        }
 
         [HttpGet("GetAllUser")]
         public async Task<IActionResult> GetUserData()
@@ -154,39 +184,6 @@ namespace MovieTicketWebApi.Controllers.User
                 Console.WriteLine(ex.StackTrace);
                 return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
 
-            }
-
-        }
-        [Authorize]
-        [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
-        {
-            try
-            {
-                var jwt = token.Replace("Bearer ", "");
-                var userid = new JwtSecurityTokenHandler()
-                    .ReadJwtToken(jwt)
-                    .Claims
-                    .FirstOrDefault(c => c.Type == "sub")?.Value;
-                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
-                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
-                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
-
-                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                ) : await collection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                );
-                if (data == null) return NotFound("Không tìm thấy người dùng");
-                return Ok(updateResult);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
             }
 
         }
@@ -235,7 +232,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var quantity = user.tickets.Select(h => h).SelectMany(ticket => ticket).Where(a => a.Quantity > 0).Distinct().Count();
+            var quantity = user.tickets.Sum(h => h.Sum(ticket => ticket.Quantity));
             return Ok(quantity);
         }
         [Authorize]
@@ -249,7 +246,7 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var movie = data.tickets.SelectMany(h => h).Select(data => data.MovieTitle).Distinct().Count();
+            var movie = data.tickets.SelectMany(h => h).Select(data => data.MovieTitle.Count()).Distinct().ToList();
             return Ok(movie);
         }
         [Authorize]
@@ -263,11 +260,11 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            const int POINT_PER_TICKET = 20;
-            var userponit = data.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
+            var point = 20;
+            var userponit = data.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * point);
             var lol = Builders<Client>.Update.Set("Point", userponit);
             var update = await mongoCollection.UpdateOneAsync(filter, lol);
-            return Ok(userponit);
+            return Ok(update);
         }
 
     }
