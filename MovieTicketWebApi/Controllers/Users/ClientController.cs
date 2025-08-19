@@ -188,7 +188,7 @@ namespace MovieTicketWebApi.Controllers.User
             }
 
         }
-        [Authorize]
+       
         [HttpGet("GetFavouriteMovieByUser")]
         public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name = "Authorization")] string token)
         {
@@ -210,7 +210,7 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(favoriteMovies);
         }
-        [Authorize]
+      
         [HttpDelete("DeleteUserFavorite")]
         public async Task Delete([FromHeader(Name = "Authorization")] string token, [FromQuery] string movieTitle)
         {
@@ -222,7 +222,7 @@ namespace MovieTicketWebApi.Controllers.User
             var update = await mongoCollection.UpdateOneAsync(filter, updateFilter);
 
         }
-        [Authorize]
+  
         [HttpGet("GetQuantityTIcketBuyByUserId")]
         public async Task<IActionResult> getQuantity([FromHeader(Name = "Authorization")] string token)
         {
@@ -236,7 +236,7 @@ namespace MovieTicketWebApi.Controllers.User
             var quantity = user.tickets.Select(h => h).SelectMany(ticket => ticket).Where(a => a.Quantity > 0).Distinct().Count();
             return Ok(quantity);
         }
-        [Authorize]
+       
         [HttpGet("GetMovieByUserId")]
         public async Task<IActionResult> GetMovie([FromHeader(Name = "Authorization")] string token)
         {
@@ -250,7 +250,7 @@ namespace MovieTicketWebApi.Controllers.User
             var movie = data.tickets.SelectMany(h => h).Select(data => data.MovieTitle).Distinct().Count();
             return Ok(movie);
         }
-        [Authorize]
+       
         [HttpGet("GetPointId")]
         public async Task<IActionResult> GetPointId([FromHeader(Name = "Authorization")] string token)
         {
