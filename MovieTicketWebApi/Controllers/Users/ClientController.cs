@@ -111,7 +111,40 @@ namespace MovieTicketWebApi.Controllers.User
 
             });
         }
-       
+        [Authorize]
+        [HttpPost("GetFavoriteMovies")]
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name = "Authorization")] string token, List<Movie> movieApiResponse)
+        {
+            try
+            {
+                var jwt = token.Replace("Bearer ", "");
+                var userid = new JwtSecurityTokenHandler()
+                    .ReadJwtToken(jwt)
+                    .Claims
+                    .FirstOrDefault(c => c.Type == "sub")?.Value;
+                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
+                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
+                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
+
+                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                ) : await collection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                );
+                if (data == null) return NotFound("Không tìm thấy người dùng");
+                return Ok(updateResult);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+
+        }
+
 
         [HttpGet("GetAllUser")]
         public async Task<IActionResult> GetUserData()
@@ -155,39 +188,7 @@ namespace MovieTicketWebApi.Controllers.User
             }
             
         }
-        [Authorize]
-        [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
-        {
-            try
-            {
-                var jwt = token.Replace("Bearer ", "");
-                var userid = new JwtSecurityTokenHandler()
-                    .ReadJwtToken(jwt)
-                    .Claims
-                    .FirstOrDefault(c => c.Type == "sub")?.Value;
-                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
-                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
-                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
-
-                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                ) : await collection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                );
-                if (data == null) return NotFound("Không tìm thấy người dùng");
-                return Ok(updateResult);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-            }
-
-        }
+       
         [Authorize]
         [HttpGet("GetFavouriteMovieByUser")]
         public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name = "Authorization")] string token)
