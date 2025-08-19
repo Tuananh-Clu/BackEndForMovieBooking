@@ -27,7 +27,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// ✅ Chỉ cần 1 AddCors duy nhất, không lồng
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>

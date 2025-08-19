@@ -16,7 +16,7 @@ using System.Net.Sockets;
 
 namespace MovieTicketWebApi.Controllers.User
 {
-   
+
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
@@ -37,65 +37,23 @@ namespace MovieTicketWebApi.Controllers.User
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
             var user = await mongoCollection.Find(i => i.Id == client.Id).FirstOrDefaultAsync();
-            if (user == null&&client.role=="User")
+            if (user == null && client.role == "User")
             {
                 await mongoCollection.InsertOneAsync(client);
             }
-            else if(user==null&&client.role=="Admin") {
+            else if (user == null && client.role == "Admin")
+            {
                 await collection.InsertOneAsync(client);
             }
 
-            return Ok(new {sucess=true});
+            return Ok(new { sucess = true });
         }
 
-
-        [HttpGet("GetAllUser")]
-        public async Task<IActionResult> GetUserData()
-        {
-            var data=await mongoCollection.Find(_=>true).ToListAsync();
-            return Ok(data);
-        }
- 
-        [HttpGet("GetQuantityTicket")]
-        public async Task<IActionResult> GetQuantityTickets()
-        {
-            try
-            {
-                var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
-                return Ok(userLength - 1);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-            }
-        }
-
-        [HttpGet("GetDoanhthuTicket")]
-        public async Task<IActionResult> DoanhThu()
-        {
-            try
-            {
-                var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
-                return Ok(datauser);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
-
-            }
-            
-        }
         [Authorize]
         [HttpPost("Up")]
         public async Task<IActionResult> AddBooking(
- [FromBody] List<List<TicketInformation>> ticketInformation,
- [FromHeader(Name = "Authorization")] string token)
+     [FromBody] List<List<TicketInformation>> ticketInformation,
+     [FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
             var handler = new JwtSecurityTokenHandler();
@@ -154,9 +112,53 @@ namespace MovieTicketWebApi.Controllers.User
 
             });
         }
+
+
+        [HttpGet("GetAllUser")]
+        public async Task<IActionResult> GetUserData()
+        {
+            var data = await mongoCollection.Find(_ => true).ToListAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("GetQuantityTicket")]
+        public async Task<IActionResult> GetQuantityTickets()
+        {
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
+                return Ok(userLength - 1);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+            }
+        }
+
+        [HttpGet("GetDoanhthuTicket")]
+        public async Task<IActionResult> DoanhThu()
+        {
+            try
+            {
+                var data = await mongoCollection.Find(_ => true).ToListAsync();
+                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
+                return Ok(datauser);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Swagger API Error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+
+            }
+
+        }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name = "Authorization")] string token, List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
         {
             try
             {
@@ -187,7 +189,6 @@ namespace MovieTicketWebApi.Controllers.User
             }
 
         }
-
         [Authorize]
         [HttpGet("GetFavouriteMovieByUser")]
         public async Task<IActionResult> GetFavouriteMoviesByUser([FromHeader(Name = "Authorization")] string token)
@@ -212,42 +213,42 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpDelete("DeleteUserFavorite")]
-        public async Task Delete([FromHeader(Name ="Authorization")]string token, [FromQuery]string movieTitle)
+        public async Task Delete([FromHeader(Name = "Authorization")] string token, [FromQuery] string movieTitle)
         {
-           var jwt=token.Replace("Bearer ","");
-            var userid=new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.FirstOrDefault(c=>c.Type=="sub")?.Value;
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             var updateFilter = Builders<Client>.Update.PullFilter(c => c.YeuThich, h => h.title == movieTitle);
-            var update=await mongoCollection.UpdateOneAsync(filter,updateFilter);
+            var update = await mongoCollection.UpdateOneAsync(filter, updateFilter);
 
         }
         [Authorize]
         [HttpGet("GetQuantityTIcketBuyByUserId")]
         public async Task<IActionResult> getQuantity([FromHeader(Name = "Authorization")] string token)
         {
-            var jwt=token.Replace("Bearer ", "");
-            var userid=new JwtSecurityTokenHandler()
-                .ReadJwtToken(jwt)
-                .Claims
-                .FirstOrDefault(c => c.Type == "sub")?.Value;
-            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
-            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var quantity=user.tickets.Select(h=>h).SelectMany(ticket => ticket).Distinct().Count();
-            return Ok(quantity);
-        }
-        [Authorize]
-        [HttpGet("GetMovieByUserId")]
-        public async Task<IActionResult> GetMovie([FromHeader(Name ="Authorization")] string token)
-        {
-            var jwt=token.Replace("Bearer ", "");
+            var jwt = token.Replace("Bearer ", "");
             var userid = new JwtSecurityTokenHandler()
                 .ReadJwtToken(jwt)
                 .Claims
                 .FirstOrDefault(c => c.Type == "sub")?.Value;
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
-            var data= await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var movie=data.tickets.SelectMany(h=>h).Select(data=>data.MovieTitle).Distinct().Count();
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var quantity = user.tickets.Select(h => h).SelectMany(ticket => ticket).Where(a => a.Quantity > 0).Distinct().Count();
+            return Ok(quantity);
+        }
+        [Authorize]
+        [HttpGet("GetMovieByUserId")]
+        public async Task<IActionResult> GetMovie([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var movie = data.tickets.SelectMany(h => h).Select(data => data.MovieTitle).Distinct().Count();
             return Ok(movie);
         }
         [Authorize]
@@ -262,8 +263,8 @@ namespace MovieTicketWebApi.Controllers.User
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             const int POINT_PER_TICKET = 20;
-            var userponit=data.tickets.Sum(h=>h.Sum(ticket => ticket.Quantity)*POINT_PER_TICKET);
-            var lol=Builders<Client>.Update.Set("Point", userponit);
+            var userponit = data.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
+            var lol = Builders<Client>.Update.Set("Point", userponit);
             var update = await mongoCollection.UpdateOneAsync(filter, lol);
             return Ok(userponit);
         }
