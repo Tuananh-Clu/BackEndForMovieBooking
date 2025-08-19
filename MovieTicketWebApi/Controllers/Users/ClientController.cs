@@ -49,7 +49,7 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(new { sucess = true });
         }
 
-        [Authorize]
+    
         [HttpPost("Up")]
         public async Task<IActionResult> AddBooking(
      [FromBody] List<List<TicketInformation>> ticketInformation,
@@ -88,7 +88,7 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(new { success = true });
         }
-        [Authorize]
+       
         [HttpGet("GetUser")]
         public async Task<IActionResult> GetAll([FromHeader(Name = "Authorization")] string token)
         {
@@ -112,7 +112,7 @@ namespace MovieTicketWebApi.Controllers.User
 
             });
         }
-        [Authorize]
+       
         [HttpPost("GetFavoriteMovies")]
         public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
         {
