@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
@@ -268,6 +271,46 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(userponit);
         }
 
+        [HttpGet("verify")]
+        public async Task<IActionResult> VerifyToken([FromHeader(Name = "Authorization")] string authHeader)
+        {
+            var token = authHeader.Replace("Bearer ", "");
+
+            var issuer = "https://teaching-squirrel-85.clerk.accounts.dev";
+
+            // Lấy public keys từ Clerk (JWKs)
+            var configManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                $"{issuer}/.well-known/openid-configuration",
+                new OpenIdConnectConfigurationRetriever());
+
+            var config = await configManager.GetConfigurationAsync();
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+                var claims = tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    ValidIssuer = issuer,
+                    ValidateIssuer = true,
+
+                    ValidateAudience = false, // bỏ nếu không cần
+                    ValidateLifetime = true,
+
+                    IssuerSigningKeys = config.SigningKeys, // 👈 đây mới đúng public key
+                    ValidateIssuerSigningKey = true
+                }, out var validatedToken);
+
+                return Ok(new
+                {
+                    Message = "Token OK",
+                    Claims = claims.Claims.Select(c => new { c.Type, c.Value })
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = "Token Invalid", Error = ex.Message });
+            }
+        }
     }
 
 }
