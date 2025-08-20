@@ -65,7 +65,7 @@ builder.Services.AddSingleton<CinemaService>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://on-gibbon-91.clerk.accounts.dev";
+        options.Authority = "https://frank-bream-9.clerk.accounts.dev";
 
         
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
