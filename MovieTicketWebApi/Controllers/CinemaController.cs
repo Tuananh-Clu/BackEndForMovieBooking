@@ -138,6 +138,13 @@ namespace MovieTicketWebApi.Controllers
             await cinemaService.DeleteTime(movieId, movietheater, time);
             return Ok(new { message = "Showtime deleted successfully" });
         }
+        [HttpDelete("DeleteSHowTimeOld")]
+        public async Task<IActionResult> DeleteShowtime()
+        {
+            await cinemaService.RemovePastShowtimesAuto();
+            return Ok(new { message = "Old showtimes deleted successfully" });
+
+        }
     }
    
 
