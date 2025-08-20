@@ -63,12 +63,10 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
     {
         options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
-        options.Audience = "http://localhost:5173"; // Từ "azp" trong payload
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -76,18 +74,48 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidAudience = "http://localhost:5173",
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(5),
             ValidateIssuerSigningKey = true
         };
 
-        // Quan trọng: Cấu hình JWKS
-        options.MetadataAddress = "https://teaching-squirrel-85.clerk.accounts.dev/.well-known/openid_configuration";
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
 
-        // Hoặc trực tiếp:
-        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-            "https://teaching-squirrel-85.clerk.accounts.dev/.well-known/openid_configuration",
-            new OpenIdConnectConfigurationRetriever());
+                var token = context.Request.Cookies["__session"]
+                         ?? context.Request.Cookies["**session"]
+                         ?? context.Request.Headers["Authorization"]
+                            .FirstOrDefault()?.Replace("Bearer ", "");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    context.Token = token;
+                    Console.WriteLine($"Token found in cookie: {token[..50]}...");
+                }
+                else
+                {
+                    Console.WriteLine("No token found in cookies or headers");
+                }
+
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"=== AUTH FAILED ===");
+                Console.WriteLine($"Exception: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("=== TOKEN VALIDATED SUCCESS ===");
+                return Task.CompletedTask;
+            }
+        };
     });
+
+
+
+
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
@@ -103,6 +131,19 @@ app.UseSwaggerUI(c =>
 app.UseCors("AllowFrontend");
 
 app.UseRouting();
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/api"))
+    {
+        Console.WriteLine($"=== REQUEST TO {context.Request.Path} ===");
+        foreach (var header in context.Request.Headers)
+        {
+            Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
+        }
+        Console.WriteLine("=== END HEADERS ===");
+    }
+    await next();
+});
 app.UseAuthentication();
 app.UseAuthorization();
 
