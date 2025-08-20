@@ -117,19 +117,15 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies([FromBody] List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader]string token,[FromBody] List<Movie> movieApiResponse)
         {
             try
             {
-                var userid = User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-                if (string.IsNullOrEmpty(userid))
-                {
-                    return Unauthorized("Không tìm thấy user trong token");
-                }
-                if (movieApiResponse == null || movieApiResponse.Count == 0)
-                {
-                    return BadRequest("Danh sách phim yêu thích trống hoặc không hợp lệ");
-                }
+                var dat= token.Replace("Bearer ", "");
+                var userid = new JwtSecurityTokenHandler()
+                    .ReadJwtToken(dat)
+                    .Claims
+                    .FirstOrDefault(c => c.Type == "sub")?.Value;
                 var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
                 var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
                 var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
