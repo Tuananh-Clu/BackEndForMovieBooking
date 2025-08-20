@@ -72,15 +72,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuer = true,
             ValidIssuer = "https://frank-bream-9.clerk.accounts.dev",
-            // Many providers (e.g., Clerk) set aud to "authenticated" or client IDs.
-            // If your token's aud doesn't match exactly, validation will fail with 401.
-            // Disable audience validation or set the correct audiences explicitly.
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero
         };
-        // Ensure signing keys are available even if automatic metadata fetch fails
         var jwksEndpoint = "https://frank-bream-9.clerk.accounts.dev/.well-known/jwks.json";
         var httpClient = new HttpClient();
         Microsoft.IdentityModel.Tokens.JsonWebKeySet? cachedJwks = null;
@@ -118,7 +114,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             },
             OnChallenge = context =>
             {
-                // Surfaces why the challenge occurred (e.g., invalid_audience)
+          
                 Console.WriteLine($"JWT challenge error: {context.Error}; description: {context.ErrorDescription}");
                 return Task.CompletedTask;
             }

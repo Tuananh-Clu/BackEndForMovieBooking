@@ -271,8 +271,25 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(userponit);
         }
 
-        
-        
+
+        [Authorize]
+        [HttpGet("GetRapPhimYeuThichNhat")]
+        public async Task<IActionResult> GetRapYeuThich([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            if (data == null) return NotFound("Không tìm thấy người dùng");
+            var rapYeuThichNhat = data.tickets.SelectMany(h => h).GroupBy(ticket => ticket.Location)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault();
+            return Ok(rapYeuThichNhat);
+        }
     }
 
 }
