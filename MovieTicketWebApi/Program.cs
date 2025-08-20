@@ -70,8 +70,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
         {
-            ValidateAudience = false,
             ValidateIssuer = true,
+
+            ValidateAudience = true,
+            ValidAudience = "https://localhost:7083",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
