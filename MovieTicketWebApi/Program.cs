@@ -62,28 +62,22 @@ builder.Services.AddSingleton<StorageMovieTmdb>();
 builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
+builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Authority = Clerk domain của bạn
         options.Authority = "https://frank-bream-9.clerk.accounts.dev";
 
-
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        // Tự động fetch JWKS và verify RS256 token
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidIssuer = "https://frank-bream-9.clerk.accounts.dev",
+            ValidateAudience = true,
+            ValidAudience = "https://localhost:7083", // phải khớp aud trong token
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
-        
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine("Authentication Failed: " + context.Exception.Message);
-                return Task.CompletedTask;
-            }
         };
     });
 
