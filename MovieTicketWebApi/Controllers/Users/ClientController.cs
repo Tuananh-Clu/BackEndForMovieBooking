@@ -117,7 +117,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies([FromHeader] string token, [FromBody] List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name ="Authorization")] string token, [FromBody] List<Movie> movieApiResponse)
         {
             if (movieApiResponse == null || movieApiResponse.Count == 0)
                 return BadRequest("Body cannot be empty");
