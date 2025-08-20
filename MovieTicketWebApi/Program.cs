@@ -71,8 +71,7 @@ builder.Services.AddAuthentication("Bearer")
             ValidateIssuer = true,
             ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
 
-            ValidateAudience = true,
-            ValidAudience = "https://localhost:7083",
+            ValidateAudience = false,
 
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
