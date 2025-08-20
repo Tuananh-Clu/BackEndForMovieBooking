@@ -1,6 +1,8 @@
 ﻿using Amazon.Auth.AccessControlPolicy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using MovieTicketWebApi.Data;
@@ -61,20 +63,31 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        options.Authority = "https://<issuer-url>";
+        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+        options.Audience = "http://localhost:5173"; // Từ "azp" trong payload
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
             ValidateAudience = true,
-            ValidAudience = "https://localhost:7083",
+            ValidAudience = "http://localhost:5173",
             ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(5),
             ValidateIssuerSigningKey = true
         };
-    }); 
+
+        // Quan trọng: Cấu hình JWKS
+        options.MetadataAddress = "https://teaching-squirrel-85.clerk.accounts.dev/.well-known/openid_configuration";
+
+        // Hoặc trực tiếp:
+        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+            "https://teaching-squirrel-85.clerk.accounts.dev/.well-known/openid_configuration",
+            new OpenIdConnectConfigurationRetriever());
+    });
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
