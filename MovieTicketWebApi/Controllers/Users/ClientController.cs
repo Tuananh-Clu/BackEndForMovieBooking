@@ -117,27 +117,35 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies( [FromHeader(Name = "Authorization")] string token,[FromBody]List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies([FromBody] List<Movie> movieApiResponse)
         {
             try
             {
-                var jwt = token.Replace("Bearer ", "");
-                var userid = new JwtSecurityTokenHandler()
-                    .ReadJwtToken(jwt)
-                    .Claims
-                    .FirstOrDefault(c => c.Type == "sub")?.Value;
+                var userid = User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+                if (string.IsNullOrEmpty(userid))
+                {
+                    return Unauthorized("Không tìm thấy user trong token");
+                }
+                if (movieApiResponse == null || movieApiResponse.Count == 0)
+                {
+                    return BadRequest("Danh sách phim yêu thích trống hoặc không hợp lệ");
+                }
                 var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
                 var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
                 var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
 
-                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                ) : await collection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                );
-                if (data == null) return NotFound("Không tìm thấy người dùng");
+                if (data != null)
+                {
+                    await mongoCollection.UpdateOneAsync(x => x.Id == userid, result);
+                }
+                else if (admin != null)
+                {
+                    await collection.UpdateOneAsync(x => x.Id == userid, result);
+                }
+                else
+                {
+                    return NotFound("Không tìm thấy người dùng");
+                }
                 return Ok(new { success = true });
             }
             catch (Exception ex)
