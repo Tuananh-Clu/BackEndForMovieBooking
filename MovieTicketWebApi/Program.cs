@@ -66,22 +66,41 @@ builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        // Authority = Clerk domain của bạn
         options.Authority = "https://frank-bream-9.clerk.accounts.dev";
-
-        // Tự động fetch JWKS và verify RS256 token
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = "https://frank-bream-9.clerk.accounts.dev",
-            ValidateAudience = true,
-            ValidAudience = "https://localhost:7083", // phải khớp aud trong token
+            // Many providers (e.g., Clerk) set aud to "authenticated" or client IDs.
+            // If your token's aud doesn't match exactly, validation will fail with 401.
+            // Disable audience validation or set the correct audiences explicitly.
+            ValidateAudience = false,
             ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                // Surfaces why the challenge occurred (e.g., invalid_audience)
+                Console.WriteLine($"JWT challenge error: {context.Error}; description: {context.ErrorDescription}");
+                return Task.CompletedTask;
+            }
+        };
+        options.RequireHttpsMetadata = true;
     });
 
 
+builder.Services.AddLogging(logging =>
+{
+    logging.AddConsole();
+});
 
 var app = builder.Build();
 
