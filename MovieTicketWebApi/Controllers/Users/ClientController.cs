@@ -162,8 +162,8 @@ namespace MovieTicketWebApi.Controllers.User
             try
             {
                 var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Count();
-                return Ok(userLength - 1);
+                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Select(a=>a.Quantity>0).Count();
+                return Ok(userLength);
             }
             catch (Exception ex)
             {
@@ -284,7 +284,7 @@ namespace MovieTicketWebApi.Controllers.User
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             if (data == null) return NotFound("Không tìm thấy người dùng");
-            var rapYeuThichNhat = data.tickets.SelectMany(h => h).GroupBy(ticket => ticket.Location)
+            var rapYeuThichNhat = data.tickets.SelectMany(h => h).GroupBy(ticket => ticket.City)
                 .OrderByDescending(g => g.Count())
                 .Select(g => g.Key)
                 .FirstOrDefault();
