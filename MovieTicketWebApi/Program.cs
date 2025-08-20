@@ -67,7 +67,7 @@ builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
         options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
-        options.Audience = "https://backendformoviebooking-production.up.railway.app";
+        options.Audience = "https://localhost:7083";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
