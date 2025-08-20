@@ -117,37 +117,36 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies([FromHeader]string token,[FromBody] List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader] string token, [FromBody] List<Movie> movieApiResponse)
         {
+            if (movieApiResponse == null || movieApiResponse.Count == 0)
+                return BadRequest("Body cannot be empty");
+
             try
             {
-                var dat= token.Replace("Bearer ", "");
-                var userid = new JwtSecurityTokenHandler()
-                    .ReadJwtToken(dat)
-                    .Claims
-                    .FirstOrDefault(c => c.Type == "sub")?.Value;
-                var data = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
-                var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
-                var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
+                var dat = token.Replace("Bearer ", "");
+                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(dat);
+                var userid = jwt.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
 
-                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                ) : await collection.UpdateOneAsync(
-                    x => x.Id == userid,
-                    result
-                );
-                if (data == null) return NotFound("Không tìm thấy người dùng");
+                if (string.IsNullOrEmpty(userid))
+                    return Unauthorized("Invalid token");
+
+                var user = await mongoCollection.Find(x => x.Id == userid).FirstOrDefaultAsync();
+                if (user == null) return NotFound("Không tìm thấy người dùng");
+
+                var update = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
+
+                await mongoCollection.UpdateOneAsync(x => x.Id == userid, update);
+
                 return Ok(new { success = true });
             }
             catch (Exception ex)
             {
                 Console.WriteLine("❌ Swagger API Error: " + ex.Message);
-                Console.WriteLine(ex.StackTrace);
-                return StatusCode(500, new { error = ex.Message, stack = ex.StackTrace });
+                return StatusCode(500, new { error = ex.Message });
             }
-
         }
+
 
         [HttpGet("GetAllUser")]
         public async Task<IActionResult> GetUserData()
