@@ -117,7 +117,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies(List<Movie> movieApiResponse, [FromHeader(Name = "Authorization")] string token)
+        public async Task<IActionResult> GetFavoriteMovies( [FromHeader(Name = "Authorization")] string token, List<Movie> movieApiResponse)
         {
             try
             {
