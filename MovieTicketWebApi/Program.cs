@@ -10,6 +10,7 @@ using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
+using System.Net.Http;
 
 AppContext.SetSwitch("System.Net.Security.SslStream.UseLegacyTls", false);
 
@@ -78,6 +79,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero
+        };
+        // Ensure signing keys are available even if automatic metadata fetch fails
+        var jwksEndpoint = "https://frank-bream-9.clerk.accounts.dev/.well-known/jwks.json";
+        var httpClient = new HttpClient();
+        Microsoft.IdentityModel.Tokens.JsonWebKeySet? cachedJwks = null;
+        DateTime cachedAt = DateTime.MinValue;
+        TimeSpan cacheTtl = TimeSpan.FromMinutes(10);
+        options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+        {
+            try
+            {
+                if (cachedJwks == null || DateTime.UtcNow - cachedAt > cacheTtl)
+                {
+                    var jwksJson = httpClient.GetStringAsync(jwksEndpoint).GetAwaiter().GetResult();
+                    cachedJwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
+                    cachedAt = DateTime.UtcNow;
+                }
+                var keys = cachedJwks?.Keys ?? new List<Microsoft.IdentityModel.Tokens.JsonWebKey>();
+                if (!string.IsNullOrEmpty(kid))
+                {
+                    return keys.Where(k => string.Equals(k.Kid, kid, StringComparison.OrdinalIgnoreCase));
+                }
+                return keys;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"JWKS fetch/parse failed: {ex.Message}");
+                return Array.Empty<Microsoft.IdentityModel.Tokens.SecurityKey>();
+            }
         };
         options.Events = new JwtBearerEvents
         {
