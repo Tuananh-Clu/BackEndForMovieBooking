@@ -63,24 +63,24 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
-builder.Services.AddAuthentication("Bearer")
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev"; 
+        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+        options.Audience = "https://localhost:7083"; // hoặc ClientId / API audience
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
 
-            ValidateAudience = false,
+            ValidateAudience = true,
+            ValidAudience = "https://localhost:7083",
+
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
+
         };
-
-        
-        options.MetadataAddress = "https://teaching-squirrel-85.clerk.accounts.dev/.well-known/openid-configuration";
     });
-
 
 
 
