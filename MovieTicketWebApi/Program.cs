@@ -66,17 +66,29 @@ builder.Services.AddSingleton<CinemaService>();
 builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
-
         options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
-
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var issuer = context.Principal?.FindFirst("iss")?.Value;
+                Console.WriteLine($"👉 Issuer trong token: {issuer}");
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"❌ Auth failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            }
         };
     });
 
