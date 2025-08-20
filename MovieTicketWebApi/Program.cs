@@ -68,7 +68,7 @@ builder.Services.AddAuthentication("Bearer")
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://<issuer-url>",
+            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
             ValidateAudience = true,
             ValidAudience = "https://localhost:7083",
             ValidateLifetime = true,
