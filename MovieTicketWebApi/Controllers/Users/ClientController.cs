@@ -291,6 +291,7 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(rapYeuThichNhat);
         }
         [Authorize]
+        [HttpGet("GetTicketsDaXem")]
         public async Task<IActionResult> GetTicketsDaXem([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
@@ -313,6 +314,7 @@ namespace MovieTicketWebApi.Controllers.User
             return Ok(data);
         }
         [Authorize]
+        [HttpGet("GetTicketsSapChieu")]
         public async Task<IActionResult> GetTicketsSapChieu([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
