@@ -134,18 +134,14 @@ namespace MovieTicketWebApi.Controllers.User
                 var admin = data == null ? await collection.Find(x => x.Id == userid).FirstOrDefaultAsync() : null;
                 var result = Builders<Client>.Update.PushEach("YeuThich", movieApiResponse);
 
-                if (data != null)
-                {
-                    await mongoCollection.UpdateOneAsync(x => x.Id == userid, result);
-                }
-                else if (admin != null)
-                {
-                    await collection.UpdateOneAsync(x => x.Id == userid, result);
-                }
-                else
-                {
-                    return NotFound("Không tìm thấy người dùng");
-                }
+                var updateResult = data != null ? await mongoCollection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                ) : await collection.UpdateOneAsync(
+                    x => x.Id == userid,
+                    result
+                );
+                if (data == null) return NotFound("Không tìm thấy người dùng");
                 return Ok(new { success = true });
             }
             catch (Exception ex)
