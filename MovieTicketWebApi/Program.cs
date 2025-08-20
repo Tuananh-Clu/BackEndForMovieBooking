@@ -67,11 +67,11 @@ builder.Services
     .AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://clerk.YOUR_APP.accounts.dev";
+        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://clerk.YOUR_APP.accounts.dev",
+            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
             ValidateAudience = false, 
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
