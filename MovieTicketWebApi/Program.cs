@@ -62,29 +62,20 @@ builder.Services.AddSingleton<StorageMovieTmdb>();
 builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
-
-
-    options.Audience = "https://localhost:7083";
-
-    options.TokenValidationParameters = new TokenValidationParameters
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
-       
-    };
-});
+        options.Authority = "https://on-gibbon-91.clerk.accounts.dev";
 
-builder.Services.AddAuthorization();
+        
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
 
 
@@ -100,19 +91,6 @@ app.UseSwaggerUI(c =>
 app.UseCors("AllowFrontend");
 
 app.UseRouting();
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/api"))
-    {
-        Console.WriteLine($"=== REQUEST TO {context.Request.Path} ===");
-        foreach (var header in context.Request.Headers)
-        {
-            Console.WriteLine($"{header.Key}: {string.Join(", ", header.Value)}");
-        }
-        Console.WriteLine("=== END HEADERS ===");
-    }
-    await next();
-});
 app.UseAuthentication();
 app.UseAuthorization();
 
