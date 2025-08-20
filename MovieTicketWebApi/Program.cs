@@ -64,52 +64,16 @@ builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
 builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+    .AddJwtBearer(options =>
     {
         options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+        options.Audience = "https://localhost:7083";
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
             ValidateAudience = true,
-            ValidAudience = "http://localhost:5173",
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
-        };
-
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-
-                var token = context.Request.Cookies["__session"]
-                         ?? context.Request.Cookies["**session"]
-                         ?? context.Request.Headers["Authorization"]
-                            .FirstOrDefault()?.Replace("Bearer ", "");
-
-                if (!string.IsNullOrEmpty(token))
-                {
-                    context.Token = token;
-                    Console.WriteLine($"Token found in cookie: {token[..50]}...");
-                }
-                else
-                {
-                    Console.WriteLine("No token found in cookies or headers");
-                }
-
-                return Task.CompletedTask;
-            },
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"=== AUTH FAILED ===");
-                Console.WriteLine($"Exception: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("=== TOKEN VALIDATED SUCCESS ===");
-                return Task.CompletedTask;
-            }
+            ClockSkew = TimeSpan.FromMinutes(2)
         };
     });
 
