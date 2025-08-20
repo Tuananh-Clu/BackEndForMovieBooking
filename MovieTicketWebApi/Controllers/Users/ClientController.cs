@@ -290,6 +290,51 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault();
             return Ok(rapYeuThichNhat);
         }
+        [Authorize]
+        public async Task<IActionResult> GetTicketsDaXem([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            if (user == null) return NotFound("Không tìm thấy người dùng");
+            var data = user.tickets.SelectMany(h => h).Where(user=>DateTime.Parse(user.Date) < DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id =ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                }).Distinct().ToList();
+        
+            return Ok(data);
+        }
+        [Authorize]
+        public async Task<IActionResult> GetTicketsSapChieu([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(c => c.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
+            var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            if (user == null) return NotFound("Không tìm thấy người dùng");
+            var data = user.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) >= DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id = ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                }).Distinct().ToList();
+
+            return Ok(data);
+        }
+
     }
 
 }
