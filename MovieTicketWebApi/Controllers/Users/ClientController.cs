@@ -138,7 +138,7 @@ namespace MovieTicketWebApi.Controllers.User
                     result
                 );
                 if (data == null) return NotFound("Không tìm thấy người dùng");
-                return Ok(updateResult);
+                return Ok(new { success = true });
             }
             catch (Exception ex)
             {
