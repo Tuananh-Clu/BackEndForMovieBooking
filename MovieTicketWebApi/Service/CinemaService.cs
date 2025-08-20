@@ -149,7 +149,7 @@ namespace MovieTicketWebApi.Service
                 .Find(filter)
                 .Project<Cinema>(projection)
                 .ToListAsync();
-
+            var date = new DateTime();
             var daySelectList = cinemas
                 .SelectMany(c => c.rooms
                     .SelectMany(r => r.showtimes
@@ -296,7 +296,7 @@ namespace MovieTicketWebApi.Service
 
 
                 var cinemas = await mongoCollection.Find(filter).ToListAsync();
-
+                var date=new DateTime();
                 var data = cinemas.Select(c => new ShowTimeForMovieBooking
                 {
                     Name = c.name,
@@ -341,6 +341,39 @@ namespace MovieTicketWebApi.Service
             }
 
         }
-       
+        public async Task RemovePastShowtimesAuto()
+        {
+            var today = DateTime.Today;
+
+            var cinemas = await mongoCollection.Find(_ => true).ToListAsync();
+
+            foreach (var cinema in cinemas)
+            {
+                bool isUpdated = false;
+
+                for (int i = 0; i < cinema.rooms.Count; i++)
+                {
+                    var room = cinema.rooms[i];
+                    var validShowtimes = room.showtimes
+                        .Where(s => !DateTime.TryParse(s.date, out DateTime showDate) || showDate >= today)
+                        .ToList();
+
+                    if (validShowtimes.Count != room.showtimes.Count)
+                    {
+                        var filter = Builders<Cinema>.Filter.And(
+                            Builders<Cinema>.Filter.Eq(c => c.id, cinema.id),
+                            Builders<Cinema>.Filter.Eq($"rooms.{i}.id", room.id)
+                        );
+
+                        var update = Builders<Cinema>.Update.Set($"rooms.{i}.showtimes", validShowtimes);
+
+                        await mongoCollection.UpdateOneAsync(filter, update);
+                        isUpdated = true;
+                    }
+                }
+            }
+        }
+
+
     }
 }
