@@ -63,16 +63,18 @@ builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
 
-builder.Services
-    .AddAuthentication("Bearer")
+builder.Services.AddAuthentication("Bearer")
     .AddJwtBearer(options =>
     {
+
         options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
-            ValidateAudience = false, 
+
+            ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true
         };
