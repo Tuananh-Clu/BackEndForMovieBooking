@@ -62,30 +62,31 @@ builder.Services.AddSingleton<StorageMovieTmdb>();
 builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+
+    options.Audience = "https://localhost:7083";
+
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.Authority = "https://teaching-squirrel-85.clerk.accounts.dev";
-        options.Audience = "https://localhost:7083"; // hoặc ClientId / API audience
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = "https://teaching-squirrel-85.clerk.accounts.dev",
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true
+       
+    };
+});
 
-            ValidateAudience = true,
-            ValidAudience = "https://localhost:7083",
-
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true
-
-        };
-    });
+builder.Services.AddAuthorization();
 
 
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
 
 var app = builder.Build();
 
