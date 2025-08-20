@@ -309,7 +309,7 @@ namespace MovieTicketWebApi.Controllers.User
                     title = ticket.MovieTitle,
                     poster = ticket.Image,
                     duration = 120
-                }).Distinct().ToList();
+                }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
         
             return Ok(data);
         }
@@ -332,7 +332,7 @@ namespace MovieTicketWebApi.Controllers.User
                     title = ticket.MovieTitle,
                     poster = ticket.Image,
                     duration = 120
-                }).Distinct().ToList();
+                }).GroupBy(t=>t.title).Select(r=>r.First()).Distinct().ToList();
 
             return Ok(data);
         }
