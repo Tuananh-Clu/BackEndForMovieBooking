@@ -37,13 +37,14 @@ namespace MovieTicketWebApi.Service
         { 
             var filter = Builders<MoviesInfomation>.Filter.Where(x => x.VoteAverage > 7);
             var soft = Builders<MoviesInfomation>.Sort.Descending(x => x.VoteAverage);
-            var datas= await mongoCollection.Find(filter).Sort(soft).Project(a=>
+            var datas= await mongoCollection.Find(filter).Limit(3).Sort(soft).Project(a=>
             new MoviesInfomation
             {
                 Id = a.Id,
                 OriginalTitle=a.OriginalTitle,
                 Title = a.Title,
                 PosterPath = a.PosterPath,
+                ReleaseDate = a.ReleaseDate,
                 Overview = a.Overview,
                 Popularity = a.Popularity,
                 VoteAverage = a.VoteAverage,
