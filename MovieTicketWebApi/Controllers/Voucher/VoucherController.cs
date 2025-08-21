@@ -1,0 +1,36 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
+using MovieTicketWebApi.Model;
+using MovieTicketWebApi.Service.Voucher;
+
+namespace MovieTicketWebApi.Controllers.Voucher
+{
+    [Route("api/[controller]")]
+    [ApiController]
+
+    public class VoucherController : ControllerBase
+    {
+        public readonly VoucherService _voucherCollection;
+        public VoucherController(VoucherService service)
+        {
+            _voucherCollection = service;
+        }
+        public async Task<IActionResult> GetAllVouchersAsync()
+        {
+            var vouchers = await _voucherCollection.GetAllVouchersAsync();
+            return Ok(vouchers);
+        }
+        [HttpPost("AddVoucher")]
+        public async Task<IActionResult> AddVoucher([FromBody] VoucherDb voucher)
+        {
+            if (voucher == null)
+            {
+                return BadRequest("Voucher cannot be null.");
+            }
+            await _voucherCollection.AddVoucher(voucher);
+            return Ok("Voucher added successfully.");
+        }
+
+    }
+}

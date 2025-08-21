@@ -10,6 +10,7 @@ using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
+using MovieTicketWebApi.Service.Voucher;
 using System.Net.Http;
 
 AppContext.SetSwitch("System.Net.Security.SslStream.UseLegacyTls", false);
@@ -63,6 +64,7 @@ builder.Services.AddSingleton<StorageMovieTmdb>();
 builder.Services.AddSingleton<MoviePopularTmdbApi_cs>();
 builder.Services.AddSingleton<MoviePlayingTmdbApi>();
 builder.Services.AddSingleton<CinemaService>();
+builder.Services.AddSingleton<VoucherService>();
 builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
