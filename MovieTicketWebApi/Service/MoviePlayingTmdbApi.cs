@@ -33,5 +33,20 @@ namespace MovieTicketWebApi.Service
         {
             return await mongoCollection.Find(_ => true).ToListAsync();
         }
+        public async Task<List<MoviesInfomation>> GetMovieRecommend()
+        { 
+            var data = await mongoCollection.Find(_ => true).ToListAsync();
+            var recommended = data.Where(x => x.VoteAverage > 8).Take(3).Select(f=>
+            new MoviesInfomation{
+                Id = f.Id,
+                Title = f.Title,
+                PosterPath = f.PosterPath,
+                Overview = f.Overview,
+                ReleaseDate = f.ReleaseDate,
+                VoteAverage = f.VoteAverage
+            }).ToList();
+            ;
+            return recommended;
+        }
     }
 }

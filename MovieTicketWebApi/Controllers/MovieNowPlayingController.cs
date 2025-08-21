@@ -34,5 +34,11 @@ namespace MovieTicketWebApi.Controllers
             var data = await moviePlayingTmdbApi.Show();
             return Ok(data);
         }
+        [HttpGet("Recommend")]
+        public async Task<IActionResult> GetMovieRecommend()
+        {
+            var recommendedMovies = await moviePlayingTmdbApi.GetMovieRecommend();
+            return Ok(recommendedMovies);
+        }
     }
 }
