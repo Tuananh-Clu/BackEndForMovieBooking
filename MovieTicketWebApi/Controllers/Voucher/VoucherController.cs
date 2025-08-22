@@ -23,7 +23,7 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok(vouchers);
         }
         [HttpPost("AddVoucher")]
-        public async Task<IActionResult> AddVoucher([FromQuery] VoucherDb voucher)
+        public async Task<IActionResult> AddVoucher([FromBody] VoucherDb voucher)
         {
             if (voucher == null)
             {
@@ -33,7 +33,7 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok("Voucher added successfully.");
         }
         [HttpPost("Change")]
-        public async Task<IActionResult> ChangeProp([FromBody]string VoucherCode)
+        public async Task<IActionResult> ChangeProp([FromQuery]string VoucherCode)
         {
             await _voucherCollection.ChangeProp(VoucherCode);
             return Ok("Ok");
