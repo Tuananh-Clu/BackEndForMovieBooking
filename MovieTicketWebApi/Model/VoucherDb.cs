@@ -1,5 +1,9 @@
-﻿namespace MovieTicketWebApi.Model
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json.Serialization;
+
+namespace MovieTicketWebApi.Model
 {
+    [BsonIgnoreExtraElements]
     public class VoucherDb
     {
         public string ? Code { get; set; }
