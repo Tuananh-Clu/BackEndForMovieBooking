@@ -3,12 +3,15 @@
     public class VoucherDb
     {
         public string ? Code { get; set; }
-        public string? VoucherCode { get; set; }
         public string? Description { get; set; }
-        public int DiscountAmount { get; set; } // Giảm giá theo số tiền
-        public DateTime ExpirationDate { get; set; }
-        public bool IsActive { get; set; }
+        public string LoaiGiam { get; set; }
+        public int DiscountAmount { get; set; } 
+        public string ExpirationDate { get; set; }
+        public string IsActive { get; set; }
         public int MinimumOrderAmount { get; set; }
-        public int usageCount { get; set; } // Số lần đã sử dụng
+        public int UsageCount { get; set; }
+        public string NgayBatDau { get; set; }
+        public string PhamViApDung { get; set; }
+        public string SoLuotUserDuocDung { get; set; }
     }
 }

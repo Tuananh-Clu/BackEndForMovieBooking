@@ -16,6 +16,7 @@ namespace MovieTicketWebApi.Controllers.Voucher
         {
             _voucherCollection = service;
         }
+        [HttpGet("GetVoucher")]
         public async Task<IActionResult> GetAllVouchersAsync()
         {
             var vouchers = await _voucherCollection.GetAllVouchersAsync();
