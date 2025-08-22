@@ -335,8 +335,51 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(data);
         }
+        [Authorize]
+        [HttpPost("AddVoucher")]
+        public async Task AddVoucher([FromHeader(Name ="Authorization")] string token, [FromBody]List<VoucherForUser> voucherForUsers)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(n => n.Type == "sub")
+                ?.Value;
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
+            var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
+            await mongoCollection.UpdateOneAsync(filter, update);
+            
+        }
+        [Authorize]
+        [HttpGet("GetVoucher")]
+        public async Task<IActionResult> GetVoucher([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(n => n.Type == "sub")
+                ?.Value;
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
+            var user = await mongoCollection.Find(filter).ToListAsync();
+            return Ok(user);
+        }
+        [Authorize]
+        [HttpPost("Used")]
+        public async Task<IActionResult> DaSuDung([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userid = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .FirstOrDefault(n => n.Type == "sub")
+                ?.Value;
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
+            var merge = Builders<VoucherForUser>.Update.Set(userid, "DaSuDung");
+            return Ok("Success");
 
 
+        }
     }
 
 }

@@ -15,5 +15,6 @@ namespace MovieTicketWebApi.Model.User
         public int Point { get; set; }
         public List<List<TicketInformation>> tickets { get; set; } = new();
         public List<Movie> YeuThich { get; set; } = new List<Movie>();
+        public List<VoucherForUser> VoucherCuaBan { get; set; }
     }
 }
