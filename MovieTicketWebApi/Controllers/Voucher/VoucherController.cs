@@ -23,7 +23,7 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok(vouchers);
         }
         [HttpPost("AddVoucher")]
-        public async Task<IActionResult> AddVoucher([FromBody] VoucherDb voucher)
+        public async Task<IActionResult> AddVoucher([FromQuery] VoucherDb voucher)
         {
             if (voucher == null)
             {
