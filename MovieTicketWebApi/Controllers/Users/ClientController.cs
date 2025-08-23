@@ -396,10 +396,12 @@ namespace MovieTicketWebApi.Controllers.User
                 .Where(c => c.VoucherCuaBan != null)
                 .SelectMany(c => c.VoucherCuaBan)
                 .Where(a => !string.IsNullOrEmpty(a.Code) && a.Code.Contains(code))
+                .GroupBy(s=>s)
                 .ToList();
             if (string.IsNullOrEmpty(code))
             {
-                return Ok(data);
+                var user=data.SelectMany(a=>a.VoucherCuaBan).GroupBy(s=>s).ToList();
+                return Ok(user);
             }
             return Ok(result);
         }
