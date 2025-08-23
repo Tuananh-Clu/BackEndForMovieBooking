@@ -362,7 +362,7 @@ namespace MovieTicketWebApi.Controllers.User
                 ?.Value;
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
             var user = await mongoCollection.Find(filter).ToListAsync();
-            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).Distinct().ToList();
+            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).GroupBy(a=>a.Code).Select(g=>g.First()).Distinct().ToList();
             return Ok(data);
         }
         [Authorize]
