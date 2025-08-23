@@ -383,27 +383,43 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("GetVoucherByCode")]
-        public async Task<IActionResult> GetVoucherByCode([FromHeader(Name ="Authorization")]string token,[FromQuery]string code)
+        public async Task<IActionResult> GetVoucherByCode([FromHeader(Name = "Authorization")] string token, [FromQuery] string code)
         {
             var jwt = token.Replace("Bearer ", "");
-            var userId=new JwtSecurityTokenHandler()
+            var userId = new JwtSecurityTokenHandler()
                 .ReadJwtToken(jwt)
                 .Claims
-                .First(a=>a.Type=="sub")?.Value;
-            var filters = Builders<Client>.Filter.Eq(a => a.Id, userId);
-            var data=await mongoCollection.Find(filters).ToListAsync();
-            var result = data
+                .FirstOrDefault(a => a.Type == "sub")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("Invalid token");
+
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userId);
+            var users = await mongoCollection.Find(filter).ToListAsync();
+
+            if (users == null || users.Count == 0)
+                return NotFound("User not found");
+
+            var vouchers = users
                 .Where(c => c.VoucherCuaBan != null)
-                .SelectMany(c => c.VoucherCuaBan)
-                .Where(a => !string.IsNullOrEmpty(a.Code) && a.Code.Contains(code))
-                .GroupBy(s=>s)
-                .ToList();
+                .SelectMany(c => c.VoucherCuaBan);
+
             if (string.IsNullOrEmpty(code))
             {
-                var user=data.SelectMany(a=>a.VoucherCuaBan).GroupBy(s=>s).ToList();
-                return Ok(user);
+                var allVouchers = vouchers
+                    .GroupBy(s => s.Code)
+                    .Select(g => g.First())
+                    .ToList();
+                return Ok(allVouchers);
             }
-            return Ok(result);
+
+            var filteredVouchers = vouchers
+                .Where(a => !string.IsNullOrEmpty(a.Code) && a.Code.Contains(code))
+                .GroupBy(s => s.Code)
+                .Select(g => g.First())
+                .ToList();
+
+            return Ok(filteredVouchers);
         }
 
     }
