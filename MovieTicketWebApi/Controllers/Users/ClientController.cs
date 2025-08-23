@@ -367,7 +367,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("Used")]
-        public async Task<IActionResult> DaSuDung([FromHeader(Name = "Authorization")] string token)
+        public async Task<IActionResult> DaSuDung([FromHeader(Name = "Authorization")] string token, [FromQuery]string code)
         {
             var jwt = token.Replace("Bearer ", "");
             var userid = new JwtSecurityTokenHandler()
@@ -375,8 +375,11 @@ namespace MovieTicketWebApi.Controllers.User
                 .Claims
                 .FirstOrDefault(n => n.Type == "sub")
                 ?.Value;
-            var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
-            var merge = Builders<VoucherForUser>.Update.Set(userid, "DaSuDung");
+            var filter = Builders<Client>.Filter.And(
+                Builders<Client>.Filter.Eq(a => a.Id, userid),
+                Builders<Client>.Filter.ElemMatch(a => a.VoucherCuaBan,s=>s.Code==code));
+            var update = Builders<Client>.Update.Set("VoucherCuaBan.$.used", "DaSuDung");
+            await mongoCollection.UpdateOneAsync(filter, update);
             return Ok("Success");
 
 
