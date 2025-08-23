@@ -362,7 +362,7 @@ namespace MovieTicketWebApi.Controllers.User
                 ?.Value;
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
             var user = await mongoCollection.Find(filter).ToListAsync();
-            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).Distinct().ToList();
+            var data = user.SelectMany(a => a.VoucherCuaBan).GroupBy(s=>s).Distinct().ToList();
             return Ok(data);
         }
         [Authorize]
@@ -381,6 +381,29 @@ namespace MovieTicketWebApi.Controllers.User
 
 
         }
+        [Authorize]
+        [HttpGet("GetVoucherByCode")]
+        public async Task<IActionResult> GetVoucherByCode([FromHeader(Name ="Authorization")]string token,[FromQuery]string code)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userId=new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .First(a=>a.Type=="sub")?.Value;
+            var filters = Builders<Client>.Filter.Eq(a => a.Id, userId);
+            var data=await mongoCollection.Find(filters).ToListAsync();
+            var result = data
+                .Where(c => c.VoucherCuaBan != null)
+                .SelectMany(c => c.VoucherCuaBan)
+                .Where(a => !string.IsNullOrEmpty(a.Code) && a.Code.Contains(code))
+                .ToList();
+            if (string.IsNullOrEmpty(code))
+            {
+                return Ok(data);
+            }
+            return Ok(result);
+        }
+
     }
 
 }
