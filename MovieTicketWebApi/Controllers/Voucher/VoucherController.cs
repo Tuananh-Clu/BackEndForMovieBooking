@@ -38,6 +38,13 @@ namespace MovieTicketWebApi.Controllers.Voucher
             await _voucherCollection.ChangeProp(VoucherCode);
             return Ok("Ok");
         }
+        [HttpGet("LayGiaSauGiam")]
+        public async Task<IActionResult> LayGiaSauGiam([FromQuery]string VoucherCode, [FromQuery]float GiaTien)
+        {
+            var data = await _voucherCollection.GetGiaSauKhiGiam(VoucherCode, GiaTien);
+            return Ok(data);
+        }
+
 
     }
 }

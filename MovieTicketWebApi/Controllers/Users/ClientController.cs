@@ -424,7 +424,6 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(filteredVouchers);
         }
-
     }
 
 }

@@ -1,6 +1,9 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
+using MovieTicketWebApi.Model.Cinema;
 
 namespace MovieTicketWebApi.Service.Voucher
 {
@@ -43,6 +46,22 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
 
+        }
+        public async Task<float> GetGiaSauKhiGiam(string code,float price)
+        {
+            var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
+            var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
+            float Price;
+            if (data.LoaiGiam == "Value")
+            {
+                Price=price-data.DiscountAmount;
+            }
+            else
+            {
+                Price=price-(price*data.DiscountAmount/100);
+            }
+            if(Price<0) Price=0;
+            return Price;
         }
     }
 }
