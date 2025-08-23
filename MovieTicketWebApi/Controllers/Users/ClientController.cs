@@ -383,7 +383,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("GetVoucherByCode")]
-        public async Task<IActionResult> GetVoucherByCode([FromHeader(Name = "Authorization")] string token, [FromQuery] string code)
+        public async Task<IActionResult> GetVoucherByCode([FromHeader(Name = "Authorization")] string token, [FromQuery] string? code)
         {
             var jwt = token.Replace("Bearer ", "");
             var userId = new JwtSecurityTokenHandler()
