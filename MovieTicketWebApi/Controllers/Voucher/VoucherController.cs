@@ -33,15 +33,15 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok("Voucher added successfully.");
         }
         [HttpPost("Change")]
-        public async Task<IActionResult> ChangeProp([FromQuery]string VoucherCode)
+        public async Task<IActionResult> ChangeProp([FromQuery]string VoucherCode, [FromQuery] string theaterName)
         {
-            await _voucherCollection.ChangeProp(VoucherCode);
+            await _voucherCollection.ChangeProp(VoucherCode,theaterName);
             return Ok("Ok");
         }
         [HttpGet("LayGiaSauGiam")]
-        public async Task<IActionResult> LayGiaSauGiam([FromQuery]string VoucherCode, [FromQuery]float GiaTien)
+        public async Task<IActionResult> LayGiaSauGiam([FromQuery]string VoucherCode, [FromQuery]float GiaTien, [FromQuery]string theaterName)
         {
-            var data = await _voucherCollection.GetGiaSauKhiGiam(VoucherCode, GiaTien);
+            var data = await _voucherCollection.GetGiaSauKhiGiam(VoucherCode, GiaTien,theaterName);
             return Ok(data);
         }
 
