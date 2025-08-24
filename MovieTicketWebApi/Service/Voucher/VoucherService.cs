@@ -55,44 +55,31 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<(float price, string announce)> GetGiaSauKhiGiam(
-      string code,
-      float price,
-      string theaterName)
+        public async Task<(float price,string annouce)> GetGiaSauKhiGiam(string code,float price, string theaterName)
         {
-            var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
-            var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
-
-            if (data == null)
-            {
-                return (price, "Voucher không tồn tại");
-            }
-
-            float Price = price;
+            var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
+            var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
+            float Price;
             string note = "Không thể áp dụng voucher cho rạp bạn đang chọn";
-
-            if (!data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower()))
-            {
-                return (price, note);
+            if (data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower())) {
+                return (price,note);
             }
-            if (price < data.MinimumOrderAmount)
-            {
-                return (price, $"Cần tối thiểu {data.MinimumOrderAmount} để áp dụng voucher");
+            else {
+                if (price < data.MinimumOrderAmount)
+                {
+                    Price = price;
+                }
+                if (data.LoaiGiam == "Value")
+                {
+                    Price = price - data.DiscountAmount;
+                }
+                else
+                {
+                    Price = price - (price * data.DiscountAmount / 100);
+                }
+                if (Price < 0) Price = 0;
+                return (Price,"");
             }
-
-            if (data.LoaiGiam == "Value")
-            {
-                Price = price - data.DiscountAmount;
-            }
-            else
-            {
-                Price = price - (price * data.DiscountAmount / 100);
-            }
-
-            if (Price < 0) Price = 0;
-
-            return (Price, "");
         }
-
     }
 }
