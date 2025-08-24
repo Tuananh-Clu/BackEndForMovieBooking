@@ -340,7 +340,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpPost("AddVoucher")]
-        public async Task AddVoucher([FromHeader(Name ="Authorization")] string token, [FromBody]List<VoucherForUser> voucherForUsers)
+        public async Task<IActionResult> AddVoucher([FromHeader(Name ="Authorization")] string token, [FromBody]List<VoucherForUser> voucherForUsers)
         {
             var jwt = token.Replace("Bearer ", "");
             var userid = new JwtSecurityTokenHandler()
@@ -349,8 +349,21 @@ namespace MovieTicketWebApi.Controllers.User
                 .FirstOrDefault(n => n.Type == "sub")
                 ?.Value;
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
-            var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
-            await mongoCollection.UpdateOneAsync(filter, update);
+            var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var code = voucherForUsers.Select(a => a.Code).FirstOrDefault();
+            var match = data.VoucherCuaBan.Select(a => a.Code == code);
+            string notice;
+            if (match != null) {
+                notice = "Không Thể Thêm Vé Bị Trùng";
+            }
+            else
+            {
+                var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
+                await mongoCollection.UpdateOneAsync(filter, update);
+                notice = "Thêm Vé Thành Công";
+            }
+            return Ok(notice);
+            
             
         }
         [Authorize]
