@@ -32,7 +32,7 @@ namespace MovieTicketWebApi.Service.Voucher
         {
             await _voucherCollection.InsertOneAsync(voucher);
         }
-        public async Task ChangeProp(string voucherCode,string theaterName)
+        public async Task ChangeProp(string voucherCode)
         {
             var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, voucherCode);
             var voucher = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
@@ -43,7 +43,7 @@ namespace MovieTicketWebApi.Service.Voucher
                 return;
             }
 
-            var find = voucher.IsActive == "true"&&voucher.PhamViApDung.Trim().ToLower()==theaterName.Trim().ToLower();
+            var find = voucher.IsActive == "true";
             if (find)
             {
                 var update = Builders<VoucherDb>.Update.Set(a => a.IsActive, "false");
@@ -61,7 +61,7 @@ namespace MovieTicketWebApi.Service.Voucher
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
             float Price;
             string note = "Không thể áp dụng voucher cho rạp bạn đang chọn";
-            if (data.PhamViApDung.Trim().ToLower() != theaterName.Trim().ToLower()) {
+            if (data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower())) {
                 return (0,note);
             }
             else {

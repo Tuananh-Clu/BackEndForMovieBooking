@@ -33,9 +33,9 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok("Voucher added successfully.");
         }
         [HttpPost("Change")]
-        public async Task<IActionResult> ChangeProp([FromQuery]string VoucherCode, [FromQuery] string theaterName)
+        public async Task<IActionResult> ChangeProp([FromQuery]string VoucherCode)
         {
-            await _voucherCollection.ChangeProp(VoucherCode,theaterName);
+            await _voucherCollection.ChangeProp(VoucherCode);
             return Ok("Ok");
         }
         [HttpGet("LayGiaSauGiam")]
