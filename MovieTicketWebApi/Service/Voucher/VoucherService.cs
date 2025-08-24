@@ -32,7 +32,7 @@ namespace MovieTicketWebApi.Service.Voucher
         {
             await _voucherCollection.InsertOneAsync(voucher);
         }
-        public async Task ChangeProp(string voucherCode)
+        public async Task ChangeProp(string voucherCode,string theaterName)
         {
             var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, voucherCode);
             var voucher = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
@@ -42,7 +42,8 @@ namespace MovieTicketWebApi.Service.Voucher
                 Console.WriteLine("Không có dữ liệu");
                 return;
             }
-            var find = voucher.IsActive == "true";
+
+            var find = voucher.IsActive == "true"&&voucher.PhamViApDung.Trim().ToLower()==theaterName.Trim().ToLower();
             if (find)
             {
                 var update = Builders<VoucherDb>.Update.Set(a => a.IsActive, "false");
@@ -53,27 +54,32 @@ namespace MovieTicketWebApi.Service.Voucher
                 var update = Builders<VoucherDb>.Update.Set(a => a.IsActive, "true");
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
-
         }
-        public async Task<float> GetGiaSauKhiGiam(string code,float price)
+        public async Task<(float price,string annouce)> GetGiaSauKhiGiam(string code,float price, string theaterName)
         {
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
             float Price;
-            if (price < data.MinimumOrderAmount)
-            {
-                Price=price;
+            string note = "Không thể áp dụng voucher cho rạp bạn đang chọn";
+            if (data.PhamViApDung.Trim().ToLower() != theaterName.Trim().ToLower()) {
+                return (0,note);
             }
-            if (data.LoaiGiam == "Value")
-            {
-                Price=price-data.DiscountAmount;
+            else {
+                if (price < data.MinimumOrderAmount)
+                {
+                    Price = price;
+                }
+                if (data.LoaiGiam == "Value")
+                {
+                    Price = price - data.DiscountAmount;
+                }
+                else
+                {
+                    Price = price - (price * data.DiscountAmount / 100);
+                }
+                if (Price < 0) Price = 0;
+                return (Price,"");
             }
-            else
-            {
-                Price=price-(price*data.DiscountAmount/100);
-            }
-            if(Price<0) Price=0;
-            return Price;
         }
     }
 }
