@@ -6,6 +6,7 @@ namespace MovieTicketWebApi.Model.Ticket
     public class TicketInformation
     {
         public string Id { get; set; } = "";
+        public string Name { get; set; }
         public string RoomId { get; set; } = "";
         public string Time { get; set; } = "";
         public string MovieTitle { get; set; } = "";
@@ -18,6 +19,6 @@ namespace MovieTicketWebApi.Model.Ticket
         public string Location { get; set; } = "";
         public string City { get; set; } = "";
         public string IsSelected { get; set; } = "true";
-        public string  name { get; set; }
+
     }
 }
