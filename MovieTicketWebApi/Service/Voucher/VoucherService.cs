@@ -55,14 +55,14 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<(float price,string annouce)> GetGiaSauKhiGiam(string code,float price, string theaterName)
+        public async Task<string> GetGiaSauKhiGiam(string code,float price, string theaterName)
         {
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
             float Price;
             string note = "Không thể áp dụng voucher cho rạp bạn đang chọn";
             if (data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower())) {
-                return (price,note);
+                return (note);
             }
             else {
                 if (price < data.MinimumOrderAmount)
@@ -78,7 +78,7 @@ namespace MovieTicketWebApi.Service.Voucher
                     Price = price - (price * data.DiscountAmount / 100);
                 }
                 if (Price < 0) Price = 0;
-                return (Price,"");
+                return (Price.ToString());
             }
         }
     }
