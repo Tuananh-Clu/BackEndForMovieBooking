@@ -9,6 +9,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using MovieTicketWebApi.Data;
+using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Model.User;
@@ -26,12 +27,14 @@ namespace MovieTicketWebApi.Controllers.User
     {
         public readonly IMongoCollection<Client> mongoCollection;
         public readonly IMongoCollection<Client> collection;
+        public readonly IMongoCollection<VoucherDb> mongo;
 
         public ClientController(MongoDbContext dbContext)
         {
 
             mongoCollection = dbContext.User;
             collection = dbContext.Admin;
+            mongo = dbContext.Voucher;
 
 
 
@@ -362,7 +365,7 @@ namespace MovieTicketWebApi.Controllers.User
                 ?.Value;
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
             var user = await mongoCollection.Find(filter).ToListAsync();
-            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).GroupBy(a=>a.used=="DangGiu").Select(g=>g.First()).Distinct().ToList();
+            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).Where(s=>s.used=="DangGiu").GroupBy(a=>a.Code).Select(g=>g.First()).Distinct().ToList();
             return Ok(data);
         }
         [Authorize]
@@ -378,8 +381,11 @@ namespace MovieTicketWebApi.Controllers.User
             var filter = Builders<Client>.Filter.And(
                 Builders<Client>.Filter.Eq(a => a.Id, userid),
                 Builders<Client>.Filter.ElemMatch(a => a.VoucherCuaBan,s=>s.Code==code));
+            var match = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
+            var up = Builders<VoucherDb>.Update.Inc(a => a.UsageCount, -1);
             var update = Builders<Client>.Update.Set("VoucherCuaBan.$.used", "DaSuDung");
             await mongoCollection.UpdateOneAsync(filter, update);
+            await mongo.UpdateOneAsync(match, up);
             return Ok("Success");
 
 

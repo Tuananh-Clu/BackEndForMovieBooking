@@ -52,6 +52,10 @@ namespace MovieTicketWebApi.Service.Voucher
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
             float Price;
+            if (price < data.MinimumOrderAmount)
+            {
+                Price=price;
+            }
             if (data.LoaiGiam == "Value")
             {
                 Price=price-data.DiscountAmount;
