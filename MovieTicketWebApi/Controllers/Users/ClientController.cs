@@ -18,7 +18,7 @@ using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 
-namespace MovieTicketWebApi.Controllers.User
+namespace MovieTicketWebApi.Controllers.Users
 {
 
     [Route("api/[controller]")]
@@ -467,6 +467,83 @@ namespace MovieTicketWebApi.Controllers.User
             var update = Builders<Client>.Update.PullFilter(a=>a.VoucherCuaBan,s=>s.used=="DaSuDung");
             await mongoCollection.UpdateOneAsync(filter,update);
         }
+        [Authorize]
+        [HttpGet("GetMemberShips")]
+        public async Task<IActionResult> GetMemberShip([FromHeader(Name = "Authorization")] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userId = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims.FirstOrDefault(c => c.Type == "sub")
+                ?.Value;
+
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
+            var datasa = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+
+            if (datasa == null) return NotFound("User not found");
+
+            string role = datasa.Point switch
+            {
+                < 1000 => "Bronze",
+                < 2000 => "Silver",
+                < 3000 => "Gold",
+                < 4000 => "Platinum",
+                < 5000 => "Diamond",
+                _ => "VIP"
+            };
+
+            var phimSapChieu = datasa.tickets
+                .SelectMany(h => h)
+                .Where(t => DateTime.TryParse(t.Date, out var d) && d >= DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id = ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                })
+                .GroupBy(t => t.title)
+                .Select(g => g.First())
+                .ToList();
+
+
+            const int POINT_PER_TICKET = 20;
+            var userPoint = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
+
+            var updateDef = Builders<Client>.Update.Set(c => c.Point, userPoint);
+            await mongoCollection.UpdateOneAsync(filter, updateDef);
+
+            var rapYeuThichNhat = datasa.tickets
+                .SelectMany(h => h)
+                .GroupBy(ticket => ticket.City)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault();
+
+            var phimDaXem = datasa.tickets
+                .SelectMany(h => h)
+                .Where(t => DateTime.TryParse(t.Date, out var d) && d < DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id = ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                })
+                .GroupBy(t => t.title)
+                .Select(g => g.First())
+                .ToList();
+
+            return Ok(new
+            {
+                memberShip = role,
+                phimDaXem,
+                phimSapChieu,
+                userPoint,
+                rapYeuThichNhat
+            });
+        }
+
     }
 
 }
