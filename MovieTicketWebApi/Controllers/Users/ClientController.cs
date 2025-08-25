@@ -351,22 +351,18 @@ namespace MovieTicketWebApi.Controllers.User
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             var code = voucherForUsers.Select(a => a.Code).FirstOrDefault();
-            var match = data.VoucherCuaBan.Select(a => a.Code == code);
+            var match = data.VoucherCuaBan.Any(a => a.Code == code);
             string notice;
-            if (match!=null&&data.VoucherCuaBan!=null) {
+            if (match) {
                 notice = "Không Thể Thêm Vé Bị Trùng";
                 return Ok(notice);
             }
-            else if (match==null) 
+            else  
             {
                 var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
                 await mongoCollection.UpdateOneAsync(filter, update);
                 notice = "Thêm Vé Thành Công";
                 return Ok(notice);
-            }
-            else
-            {
-                return BadRequest();
             }
 
 
