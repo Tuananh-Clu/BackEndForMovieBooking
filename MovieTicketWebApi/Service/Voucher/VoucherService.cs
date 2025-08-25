@@ -59,7 +59,7 @@ namespace MovieTicketWebApi.Service.Voucher
         {
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
-            if (!data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower())==true) {
+            if (!data.PhamViApDung.Trim().ToLowerInvariant().Contains(theaterName.Trim().ToLowerInvariant())) {
                 return ("Không thể áp dụng voucher cho rạp bạn đang chọn");
             }
             string Price;
