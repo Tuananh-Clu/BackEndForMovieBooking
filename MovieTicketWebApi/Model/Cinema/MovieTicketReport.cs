@@ -6,6 +6,5 @@
         public int Count { get; set; }
         public string Poster { get; set; }
         public string title { get; set; }
-        public float doanhthu { get; set; }
     }
 }
