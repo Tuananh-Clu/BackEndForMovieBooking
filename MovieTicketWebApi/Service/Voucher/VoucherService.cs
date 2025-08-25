@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
+using System.Text;
 
 namespace MovieTicketWebApi.Service.Voucher
 {
@@ -11,6 +12,11 @@ namespace MovieTicketWebApi.Service.Voucher
     public class VoucherService
     {
         public readonly IMongoCollection<VoucherDb> _voucherCollection;
+        private string NormalizeSimple(string input)
+        {
+            return input?.Normalize(NormalizationForm.FormC).Trim().ToLower();
+        }
+
         public VoucherService(MongoDbContext dbContext)
         {
             _voucherCollection = dbContext.Voucher;
@@ -59,8 +65,12 @@ namespace MovieTicketWebApi.Service.Voucher
         {
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
-            if (!data.PhamViApDung.Trim().ToLowerInvariant().Contains(theaterName.Trim().ToLowerInvariant())) {
-                return ("Không thể áp dụng voucher cho rạp bạn đang chọn");
+            var appliedTheater = NormalizeSimple(data.PhamViApDung);
+            var currentTheater = NormalizeSimple(theaterName);
+
+            if (!appliedTheater.Contains(currentTheater))
+            {
+                return "Không thể áp dụng voucher cho rạp bạn đang chọn";
             }
             string Price;
             if (price < data.MinimumOrderAmount)
