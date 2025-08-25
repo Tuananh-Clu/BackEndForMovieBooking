@@ -469,6 +469,67 @@ namespace MovieTicketWebApi.Controllers.User
             var update = Builders<Client>.Update.PullFilter(a => a.VoucherCuaBan, s => s.used == "DaSuDung");
             await mongoCollection.UpdateOneAsync(filter, update);
         }
-    }
+        [Authorize]
+        [HttpGet("GetMemberShip")]
+        public async Task<IActionResult> GetMemberShip([FromHeader] string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userId = new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a => a.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userId);
+            var data = await mongoCollection.Find(filter).ToListAsync();
+            var datasa = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            var memberShip = data.Select(a => new
+            {
+                role = a.Point < 1000
+                ? "Bronze"
+                 : a.Point < 2000
+                    ? "Silver"
+                       : a.Point < 3000
+                          ? "Gold"
+                            : a.Point < 4000
+                              ? "Platinum"
+                                 : a.Point < 5000
+                                   ? "Diamond"
+                                     : "VIP",
+            });
+            var PhimSapChieu = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) >= DateTime.Now)
+               .Select(ticket => new Movie
+               {
+                   id = ticket.Id,
+                   title = ticket.MovieTitle,
+                   poster = ticket.Image,
+                   duration = 120
+               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
 
+
+            const int POINT_PER_TICKET = 20;
+            var userponit = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
+            var lol = Builders<Client>.Update.Set("Point", userponit);
+            var update = await mongoCollection.UpdateOneAsync(filter, lol);
+
+            var rapYeuThichNhat = datasa.tickets.SelectMany(h => h).GroupBy(ticket => ticket.City)
+              .OrderByDescending(g => g.Count())
+              .Select(g => g.Key)
+              .FirstOrDefault();
+
+            var PhimDaXem = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) < DateTime.Now)
+               .Select(ticket => new Movie
+               {
+                   id = ticket.Id,
+                   title = ticket.MovieTitle,
+                   poster = ticket.Image,
+                   duration = 120
+               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
+
+            return Ok(new
+            {
+                memberShip,
+                PhimDaXem,
+                PhimSapChieu,
+                userponit,
+                rapYeuThichNhat
+            });
+        }
+    }
 }
+
