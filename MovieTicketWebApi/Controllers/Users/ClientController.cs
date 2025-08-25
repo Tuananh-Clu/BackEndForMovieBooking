@@ -15,7 +15,6 @@ using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Model.User;
 using MovieTicketWebApi.Service;
 using Newtonsoft.Json.Linq;
-using System.Drawing;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 
@@ -274,7 +273,6 @@ namespace MovieTicketWebApi.Controllers.User
             var userponit = data.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
             var lol = Builders<Client>.Update.Set("Point", userponit);
             var update = await mongoCollection.UpdateOneAsync(filter, lol);
-
             return Ok(userponit);
         }
 
