@@ -23,7 +23,7 @@ namespace MovieTicketWebApi.Service.Voucher
         }
         public async Task<List<VoucherDb>> GetAllVouchersAsync()
         {
-            var filter = Builders<VoucherDb>.Filter.Eq(a => a.IsActive, "true");
+            var filter = Builders<VoucherDb>.Filter.In(a => a.IsActive, new[] {"true","false"});
             var data = await _voucherCollection.Find(filter).ToListAsync();
             return data.Where(v =>
             {

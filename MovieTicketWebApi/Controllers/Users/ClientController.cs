@@ -115,6 +115,9 @@ namespace MovieTicketWebApi.Controllers.User
                 data.Email,
                 data.role,
                 data.tickets,
+                data.YeuThich,
+                data.VoucherCuaBan,
+                data.Point,
 
             });
         }
