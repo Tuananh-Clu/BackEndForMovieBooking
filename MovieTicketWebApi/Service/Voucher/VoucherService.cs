@@ -61,37 +61,39 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<string> GetGiaSauKhiGiam(string code,float price, string theaterName)
+        public async Task<string> GetGiaSauKhiGiam(string code, float price, string theaterName)
         {
-            var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
-            var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
+            var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
+            var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
+
+            if (data == null)
+                return "Voucher không tồn tại";
             var appliedTheater = NormalizeSimple(data.PhamViApDung);
             var currentTheater = NormalizeSimple(theaterName);
 
-            if (!appliedTheater.Contains(currentTheater))
-            {
+            if (appliedTheater != currentTheater)
                 return "Không thể áp dụng voucher cho rạp bạn đang chọn";
-            }
-            string Price;
+
             if (price < data.MinimumOrderAmount)
             {
-                return ("Đơn Hàng Tối THiểu Phải Lớn Hơn"+data.MinimumOrderAmount);
+                return $"Đơn hàng tối thiểu phải lớn hơn {data.MinimumOrderAmount}";
             }
 
-                else if (data.LoaiGiam == "Value")
-                {
-                    Price = (price - data.DiscountAmount).ToString();
-                }
-                else if (price < 0) 
-                {
-                    Price = 0.ToString();
-                }
-            else
+            float finalPrice;
+
+            if (data.LoaiGiam == "Value")
             {
-                Price = (price - (price * data.DiscountAmount / 100)).ToString();
+                finalPrice = price - data.DiscountAmount;
             }
-            return Price;
+            else 
+            {
+                finalPrice = price - (price * data.DiscountAmount / 100f);
+            }
 
+            if (finalPrice < 0) finalPrice = 0;
+
+            return finalPrice.ToString("0.##");
         }
+
     }
 }
