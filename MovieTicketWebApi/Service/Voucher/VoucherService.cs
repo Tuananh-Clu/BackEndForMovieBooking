@@ -59,27 +59,27 @@ namespace MovieTicketWebApi.Service.Voucher
         {
             var filter=Builders<VoucherDb>.Filter.Eq(a=>a.Code, code);
             var data=await _voucherCollection.Find(filter).FirstOrDefaultAsync();
-            float Price;
+            string Price;
             string note = "Không thể áp dụng voucher cho rạp bạn đang chọn";
-            if (!data.PhamViApDung.Trim().ToLower().Contains(theaterName.Trim().ToLower())) {
-                return (note);
+            if (data.PhamViApDung.Trim().ToLower()==theaterName.Trim().ToLower()) {
+                Price = note;
             }
             else {
                 if (price < data.MinimumOrderAmount)
                 {
-                    Price = price;
+                    Price = price.ToString();
                 }
                 if (data.LoaiGiam == "Value")
                 {
-                    Price = price - data.DiscountAmount;
+                    Price = (price - data.DiscountAmount).ToString();
                 }
                 else
                 {
-                    Price = price - (price * data.DiscountAmount / 100);
+                    Price = (price - (price * data.DiscountAmount / 100)).ToString();
                 }
-                if (Price < 0) Price = 0;
-                return (Price.ToString());
+                if (price < 0) Price = 0.ToString();
             }
+            return (Price);
         }
     }
 }

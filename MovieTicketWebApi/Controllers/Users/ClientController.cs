@@ -353,18 +353,23 @@ namespace MovieTicketWebApi.Controllers.User
             var code = voucherForUsers.Select(a => a.Code).FirstOrDefault();
             var match = data.VoucherCuaBan.Select(a => a.Code == code);
             string notice;
-            if (match != null) {
+            if (match!=null&&data.VoucherCuaBan!=null) {
                 notice = "Không Thể Thêm Vé Bị Trùng";
+                return Ok(notice);
             }
-            else
+            else if (match==null) 
             {
                 var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
                 await mongoCollection.UpdateOneAsync(filter, update);
                 notice = "Thêm Vé Thành Công";
+                return Ok(notice);
             }
-            return Ok(notice);
-            
-            
+            else
+            {
+                return BadRequest();
+            }
+
+
         }
         [Authorize]
         [HttpGet("GetVoucher")]
@@ -452,6 +457,16 @@ namespace MovieTicketWebApi.Controllers.User
                 .ToList();
 
             return Ok(filteredVouchers);
+        }
+        [Authorize]
+        [HttpDelete("DeleteVoucherUsed")]
+        public async Task DeleteVoucherBeUsed([FromHeader(Name ="Authorization")]string token)
+        {
+            var jwt = token.Replace("Bearer ", "");
+            var userId=new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a=>a.Type=="sub")?.Value;
+            var filter=Builders<Client>.Filter.Eq(a=>a.Id,userId);
+            var update = Builders<Client>.Update.PullFilter(a=>a.VoucherCuaBan,s=>s.used=="DaSuDung");
+            await mongoCollection.UpdateOneAsync(filter,update);
         }
     }
 
