@@ -18,7 +18,7 @@ using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 
-namespace MovieTicketWebApi.Controllers.Users
+namespace MovieTicketWebApi.Controllers.User
 {
 
     [Route("api/[controller]")]
@@ -123,7 +123,7 @@ namespace MovieTicketWebApi.Controllers.Users
         }
         [Authorize]
         [HttpPost("GetFavoriteMovies")]
-        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name ="Authorization")] string token, [FromBody] List<Movie> movieApiResponse)
+        public async Task<IActionResult> GetFavoriteMovies([FromHeader(Name = "Authorization")] string token, [FromBody] List<Movie> movieApiResponse)
         {
             if (movieApiResponse == null || movieApiResponse.Count == 0)
                 return BadRequest("Body cannot be empty");
@@ -167,7 +167,7 @@ namespace MovieTicketWebApi.Controllers.Users
             try
             {
                 var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Select(a=>a.Quantity>0).Count();
+                var userLength = data.SelectMany(user => user.tickets).SelectMany(ticket => ticket).Select(a => a.Quantity > 0).Count();
                 return Ok(userLength);
             }
             catch (Exception ex)
@@ -307,15 +307,15 @@ namespace MovieTicketWebApi.Controllers.Users
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userid);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             if (user == null) return NotFound("Không tìm thấy người dùng");
-            var data = user.tickets.SelectMany(h => h).Where(user=>DateTime.Parse(user.Date) < DateTime.Now)
+            var data = user.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) < DateTime.Now)
                 .Select(ticket => new Movie
                 {
-                    id =ticket.Id,
+                    id = ticket.Id,
                     title = ticket.MovieTitle,
                     poster = ticket.Image,
                     duration = 120
                 }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
-        
+
             return Ok(data);
         }
         [Authorize]
@@ -337,13 +337,13 @@ namespace MovieTicketWebApi.Controllers.Users
                     title = ticket.MovieTitle,
                     poster = ticket.Image,
                     duration = 120
-                }).GroupBy(t=>t.title).Select(r=>r.First()).Distinct().ToList();
+                }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
 
             return Ok(data);
         }
         [Authorize]
         [HttpPost("AddVoucher")]
-        public async Task<IActionResult> AddVoucher([FromHeader(Name ="Authorization")] string token, [FromBody]List<VoucherForUser> voucherForUsers)
+        public async Task<IActionResult> AddVoucher([FromHeader(Name = "Authorization")] string token, [FromBody] List<VoucherForUser> voucherForUsers)
         {
             var jwt = token.Replace("Bearer ", "");
             var userid = new JwtSecurityTokenHandler()
@@ -356,11 +356,12 @@ namespace MovieTicketWebApi.Controllers.Users
             var code = voucherForUsers.Select(a => a.Code).FirstOrDefault();
             var match = data.VoucherCuaBan.Any(a => a.Code == code);
             string notice;
-            if (match) {
+            if (match)
+            {
                 notice = "Không Thể Thêm Vé Bị Trùng";
                 return Ok(notice);
             }
-            else  
+            else
             {
                 var update = Builders<Client>.Update.PushEach("VoucherCuaBan", voucherForUsers);
                 await mongoCollection.UpdateOneAsync(filter, update);
@@ -382,12 +383,12 @@ namespace MovieTicketWebApi.Controllers.Users
                 ?.Value;
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userid);
             var user = await mongoCollection.Find(filter).ToListAsync();
-            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s=>s).Where(s=>s.used=="DangGiu").GroupBy(a=>a.Code).Select(g=>g.First()).Distinct().ToList();
+            var data = user.SelectMany(a => a.VoucherCuaBan).Select(s => s).Where(s => s.used == "DangGiu").GroupBy(a => a.Code).Select(g => g.First()).Distinct().ToList();
             return Ok(data);
         }
         [Authorize]
         [HttpPost("Used")]
-        public async Task<IActionResult> DaSuDung([FromHeader(Name = "Authorization")] string token, [FromQuery]string code)
+        public async Task<IActionResult> DaSuDung([FromHeader(Name = "Authorization")] string token, [FromQuery] string code)
         {
             var jwt = token.Replace("Bearer ", "");
             var userid = new JwtSecurityTokenHandler()
@@ -397,17 +398,18 @@ namespace MovieTicketWebApi.Controllers.Users
                 ?.Value;
             var filter = Builders<Client>.Filter.And(
                 Builders<Client>.Filter.Eq(a => a.Id, userid),
-                Builders<Client>.Filter.ElemMatch(a => a.VoucherCuaBan,s=>s.Code==code));
+                Builders<Client>.Filter.ElemMatch(a => a.VoucherCuaBan, s => s.Code == code));
             var match = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
             var up = Builders<VoucherDb>.Update.Inc(a => a.UsageCount, -1);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var fetchs = data.VoucherCuaBan.Any(a=>a.Code==code&&a.SoLuotUserDuocDung == "1 lần");
+            var fetchs = data.VoucherCuaBan.Any(a => a.Code == code && a.SoLuotUserDuocDung == "1 lần");
             if (fetchs)
             {
                 var update = Builders<Client>.Update.Set("VoucherCuaBan.$.used", "DaSuDung");
                 await mongoCollection.UpdateOneAsync(filter, update);
             }
-            else {
+            else
+            {
                 var update = Builders<Client>.Update.Set("VoucherCuaBan.$.used", "DangGiu");
                 await mongoCollection.UpdateOneAsync(filter, update);
             }
@@ -459,91 +461,14 @@ namespace MovieTicketWebApi.Controllers.Users
         }
         [Authorize]
         [HttpDelete("DeleteVoucherUsed")]
-        public async Task DeleteVoucherBeUsed([FromHeader(Name ="Authorization")]string token)
+        public async Task DeleteVoucherBeUsed([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
-            var userId=new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a=>a.Type=="sub")?.Value;
-            var filter=Builders<Client>.Filter.Eq(a=>a.Id,userId);
-            var update = Builders<Client>.Update.PullFilter(a=>a.VoucherCuaBan,s=>s.used=="DaSuDung");
-            await mongoCollection.UpdateOneAsync(filter,update);
+            var userId = new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a => a.Type == "sub")?.Value;
+            var filter = Builders<Client>.Filter.Eq(a => a.Id, userId);
+            var update = Builders<Client>.Update.PullFilter(a => a.VoucherCuaBan, s => s.used == "DaSuDung");
+            await mongoCollection.UpdateOneAsync(filter, update);
         }
-        [Authorize]
-        [HttpGet("GetMemberShips")]
-        public async Task<IActionResult> GetMemberShip([FromHeader(Name = "Authorization")] string token)
-        {
-            var jwt = token.Replace("Bearer ", "");
-            var userId = new JwtSecurityTokenHandler()
-                .ReadJwtToken(jwt)
-                .Claims.FirstOrDefault(c => c.Type == "sub")
-                ?.Value;
-
-            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
-            var datasa = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-
-            if (datasa == null) return NotFound("User not found");
-
-            string role = datasa.Point switch
-            {
-                < 1000 => "Bronze",
-                < 2000 => "Silver",
-                < 3000 => "Gold",
-                < 4000 => "Platinum",
-                < 5000 => "Diamond",
-                _ => "VIP"
-            };
-
-            var phimSapChieu = datasa.tickets
-                .SelectMany(h => h)
-                .Where(t => DateTime.TryParse(t.Date, out var d) && d >= DateTime.Now)
-                .Select(ticket => new Movie
-                {
-                    id = ticket.Id,
-                    title = ticket.MovieTitle,
-                    poster = ticket.Image,
-                    duration = 120
-                })
-                .GroupBy(t => t.title)
-                .Select(g => g.First())
-                .ToList();
-
-
-            const int POINT_PER_TICKET = 20;
-            var userPoint = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
-
-            var updateDef = Builders<Client>.Update.Set(c => c.Point, userPoint);
-            await mongoCollection.UpdateOneAsync(filter, updateDef);
-
-            var rapYeuThichNhat = datasa.tickets
-                .SelectMany(h => h)
-                .GroupBy(ticket => ticket.City)
-                .OrderByDescending(g => g.Count())
-                .Select(g => g.Key)
-                .FirstOrDefault();
-
-            var phimDaXem = datasa.tickets
-                .SelectMany(h => h)
-                .Where(t => DateTime.TryParse(t.Date, out var d) && d < DateTime.Now)
-                .Select(ticket => new Movie
-                {
-                    id = ticket.Id,
-                    title = ticket.MovieTitle,
-                    poster = ticket.Image,
-                    duration = 120
-                })
-                .GroupBy(t => t.title)
-                .Select(g => g.First())
-                .ToList();
-
-            return Ok(new
-            {
-                memberShip = role,
-                phimDaXem,
-                phimSapChieu,
-                userPoint,
-                rapYeuThichNhat
-            });
-        }
-
     }
 
 }
