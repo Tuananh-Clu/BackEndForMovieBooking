@@ -398,7 +398,7 @@ namespace MovieTicketWebApi.Controllers.User
             var match = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
             var up = Builders<VoucherDb>.Update.Inc(a => a.UsageCount, -1);
             var data = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var fetchs = data.VoucherCuaBan.Any(a => a.SoLuotUserDuocDung == "1 lần");
+            var fetchs = data.VoucherCuaBan.Any(a=>a.Code==code&&a.SoLuotUserDuocDung == "1 lần");
             if (fetchs)
             {
                 var update = Builders<Client>.Update.Set("VoucherCuaBan.$.used", "DaSuDung");
