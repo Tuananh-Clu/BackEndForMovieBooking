@@ -34,6 +34,19 @@ namespace MovieTicketWebApi.Service.Voucher
                 return false;
             }).ToList();
         }
+        public async Task<List<VoucherDb>> GetAllVouchersActive()
+        {
+            var filter = Builders<VoucherDb>.Filter.Eq(a => a.IsActive,"true");
+            var data = await _voucherCollection.Find(filter).ToListAsync();
+            return data.Where(v =>
+            {
+                if (DateTime.TryParse(v.ExpirationDate, out var expirationDate))
+                {
+                    return expirationDate > DateTime.Now;
+                }
+                return false;
+            }).ToList();
+        }
         public async Task AddVoucher(VoucherDb voucher)
         {
             await _voucherCollection.InsertOneAsync(voucher);

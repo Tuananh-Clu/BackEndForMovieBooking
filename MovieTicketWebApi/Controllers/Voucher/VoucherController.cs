@@ -22,6 +22,12 @@ namespace MovieTicketWebApi.Controllers.Voucher
             var vouchers = await _voucherCollection.GetAllVouchersAsync();
             return Ok(vouchers);
         }
+        [HttpGet("GetVoucherActive")]
+        public async Task<IActionResult> GetAllVouchersActive()
+        {
+            var vouchers = await _voucherCollection.GetAllVouchersActive();
+            return Ok(vouchers);
+        }
         [HttpPost("AddVoucher")]
         public async Task<IActionResult> AddVoucher([FromBody] VoucherDb voucher)
         {
