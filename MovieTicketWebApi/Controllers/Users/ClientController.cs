@@ -470,7 +470,7 @@ namespace MovieTicketWebApi.Controllers.User
             await mongoCollection.UpdateOneAsync(filter,update);
         }
         [Authorize]
-        [HttpGet("GetMemberShip")]
+        [HttpGet("GetMemberShips")]
         public async Task<IActionResult> GetMemberShip([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
