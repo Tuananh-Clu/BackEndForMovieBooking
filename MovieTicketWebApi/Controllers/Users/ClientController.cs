@@ -471,65 +471,81 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("GetMemberShip")]
-        public async Task<IActionResult> GetMemberShip([FromHeader(Name ="Authorization")]string token)
+        public async Task<IActionResult> GetMemberShip([FromHeader(Name = "Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
-            var userId = new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a => a.Type == "sub")?.Value;
-            var filter = Builders<Client>.Filter.Eq(a => a.Id, userId);
-            var data = await mongoCollection.Find(filter).ToListAsync();
+            var userId = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims.FirstOrDefault(c => c.Type == "sub")
+                ?.Value;
+
+            var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
             var datasa = await mongoCollection.Find(filter).FirstOrDefaultAsync();
-            var memberShip = data.Select(a => new
+
+            if (datasa == null) return NotFound("User not found");
+
+            string role = datasa.Point switch
             {
-                role=a.Point < 1000
-                ? "Bronze"
-                 : a.Point < 2000
-                    ? "Silver"
-                       : a.Point < 3000
-                          ? "Gold"
-                            : a.Point < 4000
-                              ? "Platinum"
-                                 : a.Point < 5000
-                                   ? "Diamond"
-                                     : "VIP",
-            });
-            var PhimSapChieu = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) >= DateTime.Now)
-               .Select(ticket => new Movie
-               {
-                   id = ticket.Id,
-                   title = ticket.MovieTitle,
-                   poster = ticket.Image,
-                   duration = 120
-               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
+                < 1000 => "Bronze",
+                < 2000 => "Silver",
+                < 3000 => "Gold",
+                < 4000 => "Platinum",
+                < 5000 => "Diamond",
+                _ => "VIP"
+            };
 
+            var phimSapChieu = datasa.tickets
+                .SelectMany(h => h)
+                .Where(t => DateTime.TryParse(t.Date, out var d) && d >= DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id = ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                })
+                .GroupBy(t => t.title)
+                .Select(g => g.First())
+                .ToList();
 
+        
             const int POINT_PER_TICKET = 20;
-            var userponit = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
-            var lol = Builders<Client>.Update.Set("Point", userponit);
-            var update = await mongoCollection.UpdateOneAsync(filter, lol);
+            var userPoint = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
 
-            var rapYeuThichNhat = datasa.tickets.SelectMany(h => h).GroupBy(ticket => ticket.City)
-              .OrderByDescending(g => g.Count())
-              .Select(g => g.Key)
-              .FirstOrDefault();
+            var updateDef = Builders<Client>.Update.Set(c => c.Point, userPoint);
+            await mongoCollection.UpdateOneAsync(filter, updateDef);
 
-            var PhimDaXem = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) < DateTime.Now)
-               .Select(ticket => new Movie
-               {
-                   id = ticket.Id,
-                   title = ticket.MovieTitle,
-                   poster = ticket.Image,
-                   duration = 120
-               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
+            var rapYeuThichNhat = datasa.tickets
+                .SelectMany(h => h)
+                .GroupBy(ticket => ticket.City)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault();
+
+            var phimDaXem = datasa.tickets
+                .SelectMany(h => h)
+                .Where(t => DateTime.TryParse(t.Date, out var d) && d < DateTime.Now)
+                .Select(ticket => new Movie
+                {
+                    id = ticket.Id,
+                    title = ticket.MovieTitle,
+                    poster = ticket.Image,
+                    duration = 120
+                })
+                .GroupBy(t => t.title)
+                .Select(g => g.First())
+                .ToList();
 
             return Ok(new
             {
-                memberShip,
-                PhimDaXem,
-                PhimSapChieu,
-                userponit,
+                memberShip = role,
+                phimDaXem,
+                phimSapChieu,
+                userPoint,
                 rapYeuThichNhat
             });
         }
+
     }
 
 }
