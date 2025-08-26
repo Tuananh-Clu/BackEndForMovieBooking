@@ -15,6 +15,7 @@ using MovieTicketWebApi.Model.Ticket;
 using MovieTicketWebApi.Model.User;
 using MovieTicketWebApi.Service;
 using Newtonsoft.Json.Linq;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 
@@ -474,62 +475,95 @@ namespace MovieTicketWebApi.Controllers.User
         public async Task<IActionResult> GetMemberShip([FromHeader] string token)
         {
             var jwt = token.Replace("Bearer ", "");
-            var userId = new JwtSecurityTokenHandler().ReadJwtToken(jwt).Claims.First(a => a.Type == "sub")?.Value;
+            var userId = new JwtSecurityTokenHandler()
+                .ReadJwtToken(jwt)
+                .Claims
+                .First(a => a.Type == "sub")?.Value;
+
             var filter = Builders<Client>.Filter.Eq(a => a.Id, userId);
             var data = await mongoCollection.Find(filter).ToListAsync();
-            var datasa = await mongoCollection.Find(filter).FirstOrDefaultAsync();
             var memberShip = data.Select(a => new
             {
                 role = a.Point < 1000
-                ? "Bronze"
-                 : a.Point < 2000
-                    ? "Silver"
-                       : a.Point < 3000
-                          ? "Gold"
+                    ? "Bronze"
+                    : a.Point < 2000
+                        ? "Silver"
+                        : a.Point < 3000
+                            ? "Gold"
                             : a.Point < 4000
+                                ? "Platinum"
+                                : a.Point < 5000
+                                    ? "Diamond"
+                                    : "VIP",
+
+                nextTier = a.Point < 1000
+                    ? "Silver"
+                    : a.Point < 2000
+                        ? "Gold"
+                        : a.Point < 3000
+                            ? "Platinum"
+                            : a.Point < 4000
+                                ? "Diamond"
+                                : a.Point < 5000
+                                    ? "VIP"
+                                    : "VIP",
+
+                pointNeed = a.Point < 1000
+                    ? 1000 - a.Point
+                    : a.Point < 2000
+                        ? 2000 - a.Point
+                        : a.Point < 3000
+                            ? 3000 - a.Point
+                            : a.Point < 4000
+                                ? 4000 - a.Point
+                                : a.Point < 5000
+                                    ? 5000 - a.Point
+                                    : 6000 - a.Point,
+
+                benefit = a.Point < 1000
+                    ? new List<string> { "5% Giảm Giá", "Miễn Phí Nước Nhỏ" }
+                    : a.Point < 2000
+                        ? new List<string> { "10% Giảm Giá", "Miễn Phí Nâng Cấp Bắp Nước", "Priority booking" }
+                        : a.Point < 3000
+                            ? new List<string> { "15% Giảm Giá", "Miễn Phí Bắp Rang Lớn", "Truy Cập Phòng Chờ VIP" }
+                            : a.Point < 4000
+                                ? new List<string> { "20% Giảm Giá", "Miễn Phí Nước Lớn", "Xem Phim Đặc Biệt" }
+                                : a.Point < 5000
+                                    ? new List<string> { "25% Giảm Giá", "Ghế VIP Miễn Phí", "Dịch Vụ Cá Nhân" }
+                                    : new List<string> { "30% Giảm Giá", "Trải Nghiệm VIP Miễn Phí", "Sự Kiện Đặc Biệt" },
+                 colorTier = a.Point < 1000
+                       ? "bg-gray-600"
+                         : a.Point < 2000
+                           ? "bg-gray-400"
+                             : a.Point < 3000
+                              ? "bg-yellow-500"
+                                : a.Point < 4000
+                                  ? "bg-purple-500"
+                                    : a.Point < 5000
+                                      ? "bg-blue-500"
+                                        : "bg-green-500"
+
+
+            });
+            var update=data.Select(a =>
+                 a.Point < 1000
+                  ? "Bronze"
+                  : a.Point < 2000
+                      ? "Silver"
+                      : a.Point < 3000
+                          ? "Gold"
+                          : a.Point < 4000
                               ? "Platinum"
-                                 : a.Point < 5000
-                                   ? "Diamond"
-                                     : "VIP",
-            });
-            var PhimSapChieu = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) >= DateTime.Now)
-               .Select(ticket => new Movie
-               {
-                   id = ticket.Id,
-                   title = ticket.MovieTitle,
-                   poster = ticket.Image,
-                   duration = 120
-               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
-
-
-            const int POINT_PER_TICKET = 20;
-            var userponit = datasa.tickets.Sum(h => h.Sum(ticket => ticket.Quantity) * POINT_PER_TICKET);
-            var lol = Builders<Client>.Update.Set("Point", userponit);
-            var update = await mongoCollection.UpdateOneAsync(filter, lol);
-
-            var rapYeuThichNhat = datasa.tickets.SelectMany(h => h).GroupBy(ticket => ticket.City)
-              .OrderByDescending(g => g.Count())
-              .Select(g => g.Key)
-              .FirstOrDefault();
-
-            var PhimDaXem = datasa.tickets.SelectMany(h => h).Where(user => DateTime.Parse(user.Date) < DateTime.Now)
-               .Select(ticket => new Movie
-               {
-                   id = ticket.Id,
-                   title = ticket.MovieTitle,
-                   poster = ticket.Image,
-                   duration = 120
-               }).GroupBy(t => t.title).Select(r => r.First()).Distinct().ToList();
-
-            return Ok(new
-            {
-                memberShip,
-                PhimDaXem,
-                PhimSapChieu,
-                userponit,
-                rapYeuThichNhat
-            });
+                              : a.Point < 5000
+                                  ? "Diamond"
+                                  : "VIP"
+    
+            );
+            var updates = Builders<Client>.Update.Set("Tier", update);
+            await mongoCollection.UpdateOneAsync(filter, updates);
+            return Ok(memberShip);
         }
+
     }
 }
 
