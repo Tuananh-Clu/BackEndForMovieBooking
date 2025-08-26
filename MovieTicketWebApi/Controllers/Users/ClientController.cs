@@ -545,22 +545,20 @@ namespace MovieTicketWebApi.Controllers.User
 
 
             });
-            var update=data.Select(a =>
-                 a.Point < 1000
-                  ? "Bronze"
-                  : a.Point < 2000
-                      ? "Silver"
-                      : a.Point < 3000
-                          ? "Gold"
-                          : a.Point < 4000
-                              ? "Platinum"
-                              : a.Point < 5000
-                                  ? "Diamond"
-                                  : "VIP"
-    
-            );
-            var updates = Builders<Client>.Update.Set("Tier", update);
-            await mongoCollection.UpdateOneAsync(filter, updates);
+            var client = data.FirstOrDefault();
+            if (client != null)
+            {
+                string newTier = client.Point < 1000 ? "Bronze"
+                    : client.Point < 2000 ? "Silver"
+                    : client.Point < 3000 ? "Gold"
+                    : client.Point < 4000 ? "Platinum"
+                    : client.Point < 5000 ? "Diamond"
+                    : "VIP";
+
+                var updates = Builders<Client>.Update.Set("Tier", newTier);
+                await mongoCollection.UpdateOneAsync(filter, updates);
+            }
+
             return Ok(memberShip);
         }
 
