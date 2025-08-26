@@ -16,5 +16,6 @@ namespace MovieTicketWebApi.Model.User
         public List<List<TicketInformation>> tickets { get; set; } = new();
         public List<Movie> YeuThich { get; set; } = new List<Movie>();
         public List<VoucherForUser> VoucherCuaBan { get; set; }
+        public string Tier { get; set; }
     }
 }
