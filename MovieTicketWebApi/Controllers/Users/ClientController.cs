@@ -472,7 +472,7 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("GetMemberShip")]
-        public async Task<IActionResult> GetMemberShip([FromHeader] string token)
+        public async Task<IActionResult> GetMemberShip([FromHeader(Name ="Authorization")] string token)
         {
             var jwt = token.Replace("Bearer ", "");
             var userId = new JwtSecurityTokenHandler()
