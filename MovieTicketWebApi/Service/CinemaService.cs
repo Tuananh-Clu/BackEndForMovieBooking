@@ -126,6 +126,7 @@ namespace MovieTicketWebApi.Service
                  Poster = group.Key.poster,
                  MovieId = group.Key.id,
                  Count = group.SelectMany((c) => c.seats).Count(a => a.isOrdered == "true"),
+                 doanhthu = group.SelectMany(c => c.seats).Where(s => s.isOrdered == "true").Sum(a => a.price)
 
              }).ToList();
             return DoanhThuBanRaTheoPhim;

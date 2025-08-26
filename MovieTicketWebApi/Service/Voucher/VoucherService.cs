@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using MovieTicketWebApi.Data;
 using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
+using MovieTicketWebApi.Model.User;
 using System.Text;
 
 namespace MovieTicketWebApi.Service.Voucher
@@ -12,6 +13,7 @@ namespace MovieTicketWebApi.Service.Voucher
     public class VoucherService
     {
         public readonly IMongoCollection<VoucherDb> _voucherCollection;
+        public readonly IMongoCollection<Client> mongoCollection;
         private string NormalizeSimple(string input)
         {
             return input?.Normalize(NormalizationForm.FormC).Trim().ToLower();
@@ -19,6 +21,7 @@ namespace MovieTicketWebApi.Service.Voucher
 
         public VoucherService(MongoDbContext dbContext)
         {
+            mongoCollection = dbContext.User;
             _voucherCollection = dbContext.Voucher;
         }
         public async Task<List<VoucherDb>> GetAllVouchersAsync()
@@ -74,7 +77,7 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<string> GetGiaSauKhiGiam(string code, float price, string theaterName)
+        public async Task<string> GetGiaSauKhiGiam(string role,string code, float price, string theaterName)
         {
             var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
             var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
@@ -94,14 +97,40 @@ namespace MovieTicketWebApi.Service.Voucher
 
             float finalPrice;
 
+            float discountPercent = 0f;
+
+            switch (role)
+            {
+                case "Bronze":
+                    discountPercent = 5f;
+                    break;
+                case "Silver":
+                    discountPercent = 10f;
+                    break;
+                case "Gold":
+                    discountPercent = 15f;
+                    break;
+                case "Platinum":
+                    discountPercent = 20f;
+                    break;
+                default:
+                    discountPercent = 30f;
+                    break;
+            }
+
             if (data.LoaiGiam == "Value")
             {
-                finalPrice = price - data.DiscountAmount;
+                finalPrice = (price - data.DiscountAmount) * (1 - discountPercent / 100f);
             }
-            else 
+            else if (data.LoaiGiam == "Percent")
             {
-                finalPrice = price - (price * data.DiscountAmount / 100f);
+                finalPrice = price * (1 - (data.DiscountAmount + discountPercent) / 100f);
             }
+            else
+            {
+                finalPrice = price; 
+            }
+
 
             if (finalPrice < 0) finalPrice = 0;
 
