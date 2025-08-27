@@ -45,7 +45,7 @@ namespace MovieTicketWebApi.Controllers.Voucher
             return Ok("Ok");
         }
         [HttpGet("LayGiaSauGiam")]
-        public async Task<IActionResult> LayGiaSauGiam([FromQuery] string role,[FromQuery]string VoucherCode, [FromQuery]float GiaTien, [FromQuery]string theaterName)
+        public async Task<IActionResult> LayGiaSauGiam([FromQuery] string role,[FromQuery]string? VoucherCode, [FromQuery]float GiaTien, [FromQuery]string? theaterName)
         {
             var data = await _voucherCollection.GetGiaSauKhiGiam(role,VoucherCode, GiaTien,theaterName);
             return Ok(data);
