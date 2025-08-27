@@ -78,9 +78,20 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<string> GetGiaSauKhiGiam(string role,string?code, float price, string?theaterName)
+        public async Task<string> GetGiaSauKhiGiam(string role,string? code, float price, string? theaterName)
         {
-            if (code != null&&theaterName!=null)
+            float GetRoleDiscount(string r) =>
+                      r switch
+                       {
+                          "Bronze" => 5f,
+                          "Silver" => 10f,
+                           "Gold" => 15f,
+                            "Platinum" => 20f,
+                               _ => 30f
+                          };
+            float finalPrice;
+            float discountPercent = GetRoleDiscount(role);
+            if (!string.IsNullOrEmpty(code)&&!string.IsNullOrEmpty(theaterName))
             {
                 var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
                 var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
@@ -97,30 +108,7 @@ namespace MovieTicketWebApi.Service.Voucher
                 {
                     return $"Đơn hàng tối thiểu phải lớn hơn {data.MinimumOrderAmount}";
                 }
-
-                float finalPrice;
-
-                float discountPercent = 0f;
-
-                switch (role)
-                {
-                    case "Bronze":
-                        discountPercent = 5f;
-                        break;
-                    case "Silver":
-                        discountPercent = 10f;
-                        break;
-                    case "Gold":
-                        discountPercent = 15f;
-                        break;
-                    case "Platinum":
-                        discountPercent = 20f;
-                        break;
-                    default:
-                        discountPercent = 30f;
-                        break;
-                }
-
+             
                 if (data.LoaiGiam == "Value")
                 {
                     finalPrice = (price - data.DiscountAmount) * (1 - discountPercent / 100f);
@@ -141,28 +129,6 @@ namespace MovieTicketWebApi.Service.Voucher
             }
             else
             {
-                float finalPrice;
-
-                float discountPercent = 0f;
-
-                switch (role)
-                {
-                    case "Bronze":
-                        discountPercent = 5f;
-                        break;
-                    case "Silver":
-                        discountPercent = 10f;
-                        break;
-                    case "Gold":
-                        discountPercent = 15f;
-                        break;
-                    case "Platinum":
-                        discountPercent = 20f;
-                        break;
-                    default:
-                        discountPercent = 30f;
-                        break;
-                }
                 finalPrice = price * (1 - discountPercent / 100f);
 
                 if (finalPrice < 0) finalPrice = 0;
