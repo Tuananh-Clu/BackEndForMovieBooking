@@ -6,6 +6,7 @@ using MovieTicketWebApi.Model;
 using MovieTicketWebApi.Model.Cinema;
 using MovieTicketWebApi.Model.User;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MovieTicketWebApi.Service.Voucher
 {
@@ -77,64 +78,97 @@ namespace MovieTicketWebApi.Service.Voucher
                 await _voucherCollection.UpdateOneAsync(filter, update);
             }
         }
-        public async Task<string> GetGiaSauKhiGiam(string role,string code, float price, string theaterName)
+        public async Task<string> GetGiaSauKhiGiam(string role,string?code, float price, string?theaterName)
         {
-            var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
-            var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
-
-            if (data == null)
-                return "Voucher không tồn tại";
-            var appliedTheater = NormalizeSimple(data.PhamViApDung);
-            var currentTheater = NormalizeSimple(theaterName);
-
-            if (appliedTheater != currentTheater)
-                return "Không thể áp dụng voucher cho rạp bạn đang chọn";
-
-            if (price < data.MinimumOrderAmount)
+            if (code != null&&theaterName!=null)
             {
-                return $"Đơn hàng tối thiểu phải lớn hơn {data.MinimumOrderAmount}";
-            }
+                var filter = Builders<VoucherDb>.Filter.Eq(a => a.Code, code);
+                var data = await _voucherCollection.Find(filter).FirstOrDefaultAsync();
 
-            float finalPrice;
+                if (data == null)
+                    return "Voucher không tồn tại";
+                var appliedTheater = NormalizeSimple(data.PhamViApDung);
+                var currentTheater = NormalizeSimple(theaterName);
 
-            float discountPercent = 0f;
+                if (appliedTheater != currentTheater)
+                    return "Không thể áp dụng voucher cho rạp bạn đang chọn";
 
-            switch (role)
-            {
-                case "Bronze":
-                    discountPercent = 5f;
-                    break;
-                case "Silver":
-                    discountPercent = 10f;
-                    break;
-                case "Gold":
-                    discountPercent = 15f;
-                    break;
-                case "Platinum":
-                    discountPercent = 20f;
-                    break;
-                default:
-                    discountPercent = 30f;
-                    break;
-            }
+                if (price < data.MinimumOrderAmount)
+                {
+                    return $"Đơn hàng tối thiểu phải lớn hơn {data.MinimumOrderAmount}";
+                }
 
-            if (data.LoaiGiam == "Value")
-            {
-                finalPrice = (price - data.DiscountAmount) * (1 - discountPercent / 100f);
-            }
-            else if (data.LoaiGiam == "Percent")
-            {
-                finalPrice = price * (1 - (data.DiscountAmount + discountPercent) / 100f);
+                float finalPrice;
+
+                float discountPercent = 0f;
+
+                switch (role)
+                {
+                    case "Bronze":
+                        discountPercent = 5f;
+                        break;
+                    case "Silver":
+                        discountPercent = 10f;
+                        break;
+                    case "Gold":
+                        discountPercent = 15f;
+                        break;
+                    case "Platinum":
+                        discountPercent = 20f;
+                        break;
+                    default:
+                        discountPercent = 30f;
+                        break;
+                }
+
+                if (data.LoaiGiam == "Value")
+                {
+                    finalPrice = (price - data.DiscountAmount) * (1 - discountPercent / 100f);
+                }
+                else if (data.LoaiGiam == "Percent")
+                {
+                    finalPrice = price * (1 - (data.DiscountAmount + discountPercent) / 100f);
+                }
+                else
+                {
+                    finalPrice = price;
+                }
+
+
+                if (finalPrice < 0) finalPrice = 0;
+
+                return finalPrice.ToString("0.##");
             }
             else
             {
-                finalPrice = price; 
+                float finalPrice;
+
+                float discountPercent = 0f;
+
+                switch (role)
+                {
+                    case "Bronze":
+                        discountPercent = 5f;
+                        break;
+                    case "Silver":
+                        discountPercent = 10f;
+                        break;
+                    case "Gold":
+                        discountPercent = 15f;
+                        break;
+                    case "Platinum":
+                        discountPercent = 20f;
+                        break;
+                    default:
+                        discountPercent = 30f;
+                        break;
+                }
+                finalPrice = price * (1 - discountPercent / 100f);
+
+                if (finalPrice < 0) finalPrice = 0;
+
+                return finalPrice.ToString("0.##");
             }
-
-
-            if (finalPrice < 0) finalPrice = 0;
-
-            return finalPrice.ToString("0.##");
         }
 
     }

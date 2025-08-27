@@ -185,7 +185,7 @@ namespace MovieTicketWebApi.Controllers.User
             try
             {
                 var data = await mongoCollection.Find(_ => true).ToListAsync();
-                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => ticket.Price)));
+                var datauser = data.Sum(user => user.tickets.Sum(h => h.Sum(ticket => (decimal)ticket.Price)));
                 return Ok(datauser);
             }
             catch (Exception ex)
