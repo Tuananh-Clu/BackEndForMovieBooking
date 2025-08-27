@@ -523,7 +523,7 @@ namespace MovieTicketWebApi.Controllers.User
                 benefit = a.Point < 1000
                     ? new List<string> { "5% Giảm Giá", "Miễn Phí Nước Nhỏ" }
                     : a.Point < 2000
-                        ? new List<string> { "10% Giảm Giá", "Miễn Phí Nâng Cấp Bắp Nước", "Priority booking" }
+                        ? new List<string> { "10% Giảm Giá", "Miễn Phí Bắp Nước Nhỏ", "Priority booking" }
                         : a.Point < 3000
                             ? new List<string> { "15% Giảm Giá", "Miễn Phí Bắp Rang Lớn", "Truy Cập Phòng Chờ VIP" }
                             : a.Point < 4000
