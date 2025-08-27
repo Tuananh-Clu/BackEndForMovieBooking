@@ -280,8 +280,7 @@ namespace MovieTicketWebApi.Service
                          .SelectMany(st => st.seats)
                          .Where(seat => seat.isOrdered == "true")
                          .Sum(seat => seat.price)
-                    )
-                    .ToList()
+                    ).ToList()
             }).ToList();
 
             return data;
