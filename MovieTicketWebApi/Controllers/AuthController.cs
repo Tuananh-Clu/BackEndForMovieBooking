@@ -49,6 +49,7 @@ namespace MovieTicketWebApi.Controllers
                     Id = Guid.NewGuid().ToString(),
                     Email = request.Email,
                     PassWord = request.Password,
+                    Avatar=request.Avatar?? "https://i.pinimg.com/736x/c6/e5/65/c6e56503cfdd87da299f72dc416023d4.jpg",
                     Name = request.Name,
                     role = "User",
                     Point = 0,
@@ -103,7 +104,9 @@ namespace MovieTicketWebApi.Controllers
                             name = user.Name,
                             role = user.role,
                             point = user.Point,
-                            tier = user.Tier
+                            tier = user.Tier,
+                            avatar= user.Avatar,
+                            
                         }
                     });
                 }
@@ -141,12 +144,10 @@ namespace MovieTicketWebApi.Controllers
         {
             try
             {
-                // Validate input
                 if (request == null)
                     return BadRequest(new { success = false, message = "Dữ liệu đăng ký không được để trống" });
 
 
-                // Check if admin already exists by email
                 var existingUser = await _userCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
                 if (existingUser != null)
                     return BadRequest(new { success = false, message = "Email đã tồn tại trong hệ thống" });
@@ -154,14 +155,13 @@ namespace MovieTicketWebApi.Controllers
                 var existingAdmin = await _adminCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
                 if (existingAdmin != null)
                     return BadRequest(new { success = false, message = "Email đã tồn tại trong hệ thống" });
-
-                // Create new admin
                 var newAdmin = new Client
                 {
                     Id = Guid.NewGuid().ToString(),
                     Email = request.Email,
                     PassWord = request.Password, 
                     Name = request.Name,
+                    Avatar=request.Avatar,
                     role = "Admin",
                     Point = 0,
                     tickets = new List<List<TicketInformation>>(),
@@ -181,7 +181,8 @@ namespace MovieTicketWebApi.Controllers
                         id = newAdmin.Id,
                         email = newAdmin.Email,
                         name = newAdmin.Name,
-                        role = newAdmin.role
+                        role = newAdmin.role,
+                        avatar=newAdmin.Avatar
                     }
                 });
             }
