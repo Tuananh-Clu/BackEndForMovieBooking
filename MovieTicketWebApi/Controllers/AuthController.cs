@@ -125,7 +125,8 @@ namespace MovieTicketWebApi.Controllers
                             name = admin.Name,
                             role = admin.role,
                             point = admin.Point,
-                            tier = admin.Tier
+                            tier = admin.Tier,
+                            avatar=admin.Avatar
                         }
                     });
                 }
@@ -182,7 +183,6 @@ namespace MovieTicketWebApi.Controllers
                         email = newAdmin.Email,
                         name = newAdmin.Name,
                         role = newAdmin.role,
-                        avatar=newAdmin.Avatar
                     }
                 });
             }
