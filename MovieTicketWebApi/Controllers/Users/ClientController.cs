@@ -19,6 +19,7 @@ using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
 using System.Security.Claims;
+using System.Text;
 
 namespace MovieTicketWebApi.Controllers.User
 {
@@ -51,20 +52,13 @@ namespace MovieTicketWebApi.Controllers.User
 
             return Ok(new { userId, email, role });
         }
+        // User registration and login moved to AuthController
+        // This method is kept for backward compatibility but deprecated
         [HttpPost("AddUser")]
+        [Obsolete("Use AuthController.Register instead")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
         {
-            var user = await mongoCollection.Find(i => i.Id == client.Id).FirstOrDefaultAsync();
-            if (user == null && client.role == "User")
-            {
-                await mongoCollection.InsertOneAsync(client);
-            }
-            else if (user == null && client.role == "Admin")
-            {
-                await collection.InsertOneAsync(client);
-            }
-
-            return Ok(new { sucess = true });
+            return BadRequest(new { message = "Vui lòng sử dụng /api/Auth/Register thay vì endpoint này" });
         }
 
         [Authorize]

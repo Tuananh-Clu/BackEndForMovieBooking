@@ -1,0 +1,47 @@
+### Test AuthController Endpoints
+
+### 1. User Registration
+POST {{baseUrl}}/api/Auth/Register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "name": "Test User"
+}
+
+### 2. Admin Registration
+POST {{baseUrl}}/api/Auth/AdminRegister
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "name": "Admin User"
+}
+
+### 3. User Login
+POST {{baseUrl}}/api/Auth/Login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 4. Admin Login
+POST {{baseUrl}}/api/Auth/Login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+### 5. Test Profile (requires token)
+GET {{baseUrl}}/api/Client/profile
+Authorization: Bearer {{token}}
+
+### Variables
+@baseUrl = https://localhost:7001
+@token = your_jwt_token_here
