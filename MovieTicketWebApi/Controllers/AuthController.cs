@@ -33,8 +33,6 @@ namespace MovieTicketWebApi.Controllers
                 if (request == null)
                     return BadRequest(new { success = false, message = "Dữ liệu đăng ký không được để trống" });
 
-                if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Name))
-                    return BadRequest(new { success = false, message = "Email, mật khẩu và tên không được để trống" });
 
 
                 var existingUser = await _userCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
@@ -90,7 +88,6 @@ namespace MovieTicketWebApi.Controllers
                 if (request == null || string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
                     return BadRequest(new { success = false, message = "Email và mật khẩu không được để trống" });
 
-                // Check in User collection first
                 var user = await _userCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
                 if (user != null && user.PassWord == request.Password)
                 {
@@ -110,8 +107,6 @@ namespace MovieTicketWebApi.Controllers
                         }
                     });
                 }
-
-                // Check in Admin collection
                 var admin = await _adminCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
                 if (admin != null && admin.PassWord == request.Password)
                 {
@@ -150,8 +145,6 @@ namespace MovieTicketWebApi.Controllers
                 if (request == null)
                     return BadRequest(new { success = false, message = "Dữ liệu đăng ký không được để trống" });
 
-                if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password) || string.IsNullOrEmpty(request.Name))
-                    return BadRequest(new { success = false, message = "Email, mật khẩu và tên không được để trống" });
 
                 // Check if admin already exists by email
                 var existingUser = await _userCollection.Find(u => u.Email == request.Email).FirstOrDefaultAsync();
