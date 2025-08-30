@@ -12,6 +12,7 @@ using MovieTicketWebApi.Service;
 using MovieTicketWebApi.Service.Article;
 using MovieTicketWebApi.Service.Voucher;
 using System.Net.Http;
+using System.Text;
 
 AppContext.SetSwitch("System.Net.Security.SslStream.UseLegacyTls", false);
 
@@ -69,59 +70,16 @@ builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = "https://frank-bream-9.clerk.accounts.dev";
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidIssuer = "https://frank-bream-9.clerk.accounts.dev",
+            ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+
         };
-        var jwksEndpoint = "https://frank-bream-9.clerk.accounts.dev/.well-known/jwks.json";
-        var httpClient = new HttpClient();
-        Microsoft.IdentityModel.Tokens.JsonWebKeySet? cachedJwks = null;
-        DateTime cachedAt = DateTime.MinValue;
-        TimeSpan cacheTtl = TimeSpan.FromMinutes(10);
-        options.TokenValidationParameters.IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-        {
-            try
-            {
-                if (cachedJwks == null || DateTime.UtcNow - cachedAt > cacheTtl)
-                {
-                    var jwksJson = httpClient.GetStringAsync(jwksEndpoint).GetAwaiter().GetResult();
-                    cachedJwks = new Microsoft.IdentityModel.Tokens.JsonWebKeySet(jwksJson);
-                    cachedAt = DateTime.UtcNow;
-                }
-                var keys = cachedJwks?.Keys ?? new List<Microsoft.IdentityModel.Tokens.JsonWebKey>();
-                if (!string.IsNullOrEmpty(kid))
-                {
-                    return keys.Where(k => string.Equals(k.Kid, kid, StringComparison.OrdinalIgnoreCase));
-                }
-                return keys;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"JWKS fetch/parse failed: {ex.Message}");
-                return Array.Empty<Microsoft.IdentityModel.Tokens.SecurityKey>();
-            }
-        };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"JWT authentication failed: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnChallenge = context =>
-            {
-          
-                Console.WriteLine($"JWT challenge error: {context.Error}; description: {context.ErrorDescription}");
-                return Task.CompletedTask;
-            }
-        };
-        options.RequireHttpsMetadata = true;
     });
 
 

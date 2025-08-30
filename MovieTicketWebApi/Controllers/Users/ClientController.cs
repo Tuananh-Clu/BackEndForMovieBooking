@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Sockets;
+using System.Security.Claims;
 
 namespace MovieTicketWebApi.Controllers.User
 {
@@ -39,6 +40,16 @@ namespace MovieTicketWebApi.Controllers.User
 
 
 
+        }
+        [Authorize]
+        [HttpGet("profile")]
+        public IActionResult GetProfile()
+        {
+            var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var email = User.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            return Ok(new { userId, email, role });
         }
         [HttpPost("AddUser")]
         public async Task<IActionResult> CreateUser([FromBody] Client client)
