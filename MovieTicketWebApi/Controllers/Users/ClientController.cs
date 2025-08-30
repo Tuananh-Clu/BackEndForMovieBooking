@@ -44,14 +44,52 @@ namespace MovieTicketWebApi.Controllers.User
         }
         [Authorize]
         [HttpGet("profile")]
-        public IActionResult GetProfile()
+        public async Task<IActionResult> GetProfile()
         {
-            var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-            var email = User.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            try
+            {
+                var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                var email = User.FindFirst(JwtRegisteredClaimNames.Email)?.Value;
+                var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            return Ok(new { userId, email, role });
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { success = false, message = "Không tìm thấy thông tin người dùng" });
+                var user = await mongoCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+                if (user == null)
+                {
+
+                    user = await collection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+                }
+
+                if (user == null)
+                    return NotFound(new { success = false, message = "Không tìm thấy người dùng" });
+
+                return Ok(new { 
+                    success = true,
+                    user = new
+                    {
+                        id = user.Id,
+                        email = user.Email,
+                        name = user.Name,
+                        role = user.role,
+                        point = user.Point,
+                        tier = user.Tier,
+                        avatar = user.Avatar,
+                        tickets = user.tickets?.Count ?? 0,
+                        favoriteMovies = user.YeuThich?.Count ?? 0,
+                        vouchers = user.VoucherCuaBan?.Count ?? 0
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Lỗi lấy profile: " + ex.Message);
+                return StatusCode(500, new { success = false, message = "Lỗi server: " + ex.Message });
+            }
         }
+
+
+
         // User registration and login moved to AuthController
         // This method is kept for backward compatibility but deprecated
         [HttpPost("AddUser")]

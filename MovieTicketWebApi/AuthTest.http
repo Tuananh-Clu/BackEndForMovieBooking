@@ -42,6 +42,8 @@ Content-Type: application/json
 GET {{baseUrl}}/api/Client/profile
 Authorization: Bearer {{token}}
 
+
+
 ### Variables
 @baseUrl = https://localhost:7001
 @token = your_jwt_token_here
