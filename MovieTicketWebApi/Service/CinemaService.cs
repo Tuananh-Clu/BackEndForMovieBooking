@@ -12,6 +12,7 @@ namespace MovieTicketWebApi.Service
 {
     public class CinemaService
     {
+        //da//
         public readonly IMongoCollection<Cinema> mongoCollection;
         public CinemaService(MongoDbContext dbContext)
         {

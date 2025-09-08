@@ -252,6 +252,10 @@ namespace MovieTicketWebApi.Controllers.User
 
             var filter = Builders<Client>.Filter.Eq(c => c.Id, userId);
             var user = await mongoCollection.Find(filter).FirstOrDefaultAsync();
+            if (user == null || user.YeuThich == null)
+            {
+                return NotFound("User not found or no favorite movies.");
+            }
             var favoriteMovies = user.YeuThich?.Select(h => new Movie
             {
                 id = h.id,
